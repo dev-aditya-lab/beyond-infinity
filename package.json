@@ -1,0 +1,22 @@
+{
+  "name": "beyond-infinity",
+  "version": "1.0.0",
+  "description": "A System For Managing Production Incidents And Outages. Teams Should Be Able To Create Incidents, Assign Responders, Post Live Updates, Maintain Timelines, Generate Postmortems, And Show A Public Status Page. Al Can Be Used For Summaries And Probable Root-Cause Suggestions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-aditya-lab/beyond-infinity.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dev-aditya-lab/beyond-infinity/issues"
+  },
+  "homepage": "https://github.com/dev-aditya-lab/beyond-infinity#readme"
+}
