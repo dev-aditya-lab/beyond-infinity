@@ -5,6 +5,7 @@ import app from "./src/app.js";
 import { ENV } from "./src/config/env.config.js";
 import { connectDB, disconnectDB, initDBEvents } from "./src/config/Database/database.js";
 import { initSocketServer } from "./src/sockets/server.socket.js";
+import { connectRedis, disconnectRedis } from "./src/config/redis/redis.config.js";
 
 /**
  * Create HTTP Server
@@ -27,6 +28,9 @@ const startServer = async () => {
     // Init Socket AFTER server created
     initSocketServer(httpServer);
 
+    // connect Redis
+    await connectRedis();
+
     // Start Server
     httpServer.listen(ENV.PORT, () => {
       console.log(`Server running on port ${ENV.PORT}`);
@@ -47,6 +51,7 @@ const shutdown = async (signal) => {
 
   try {
     await disconnectDB();
+    await disconnectRedis();
 
     httpServer.close(() => {
       console.log("💤 Server closed");
