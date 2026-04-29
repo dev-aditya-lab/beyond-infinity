@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const apiKeySchema = new mongoose.Schema(
   {
-    appName: {
+    name: {
       type: String, // e.g. "Frontend App", "Mobile App"
       required: true,
     },
