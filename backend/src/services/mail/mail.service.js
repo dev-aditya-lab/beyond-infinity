@@ -9,12 +9,7 @@ const resend = new Resend(ENV.MAIL.API_KEY);
 /**
  * Send Email Service
  */
-export const sendEmail = async ({
-  to,
-  subject,
-  text,
-  html,
-}) => {
+export const sendEmail = async ({ to, subject, text, html }) => {
   try {
     // Basic validation
     if (!to || !subject) {

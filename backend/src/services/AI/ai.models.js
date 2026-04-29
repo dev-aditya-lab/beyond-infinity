@@ -20,4 +20,3 @@ export const msgModel = new ChatGroq({
   temperature: 0.7, // balanced creativity
   maxTokens: 1000, // controlled output
 });
-

@@ -6,7 +6,7 @@ import morgan from "morgan";
 import { ENV } from "./config/env.config.js";
 
 // Routes
-import authRouter from "./routes/auth.routes.js";
+// import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -36,7 +36,7 @@ app.use(cookieParser());
 /**
  * ---------------- Routes ----------------
  */
-app.use("/api/auth", authRouter);
+// app.use("/api/auth", authRouter);
 // app.use("/api/chats", chatRoute);
 
 /**
@@ -64,15 +64,12 @@ app.use((req, res) => {
 /**
  * ---------------- Global Error Handler ----------------
  */
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error("❌ Error:", err.message);
 
   res.status(err.statusCode || 500).json({
     success: false,
-    message:
-      ENV.NODE_ENV === "production"
-        ? "Internal Server Error"
-        : err.message,
+    message: ENV.NODE_ENV === "production" ? "Internal Server Error" : err.message,
   });
 });
 

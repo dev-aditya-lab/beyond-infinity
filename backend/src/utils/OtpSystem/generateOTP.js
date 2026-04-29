@@ -13,10 +13,7 @@ export const generateOTP = (length = 6) => {
 
   const max = 10 ** length;
 
-  const otp = crypto
-    .randomInt(0, max)
-    .toString()
-    .padStart(length, "0");
+  const otp = crypto.randomInt(0, max).toString().padStart(length, "0");
 
   return otp;
 };
@@ -35,8 +32,5 @@ export const hashOTP = (otp) => {
 
 export const verifyOTP = (inputOtp, storedHashedOtp) => {
   const hashedInput = hashOTP(inputOtp);
-  return crypto.timingSafeEqual(
-    Buffer.from(hashedInput),
-    Buffer.from(storedHashedOtp)
-  );
+  return crypto.timingSafeEqual(Buffer.from(hashedInput), Buffer.from(storedHashedOtp));
 };

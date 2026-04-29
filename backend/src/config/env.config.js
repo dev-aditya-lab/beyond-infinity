@@ -1,6 +1,4 @@
-import 'dotenv/config';
-
-dotenv.config();
+import "dotenv/config";
 
 /**
  * Required ENV checker
