@@ -4,8 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 
 import { ENV } from "./config/env.config.js";
-
 // Routes
+import apiRouter from "./routes/apiKey.routes.js";
 // import authRouter from "./routes/auth.routes.js";
 
 const app = express();
@@ -37,8 +37,7 @@ app.use(cookieParser());
  * ---------------- Routes ----------------
  */
 // app.use("/api/auth", authRouter);
-// app.use("/api/chats", chatRoute);
-
+app.use("/api/keys", apiRouter);
 /**
  * ---------------- Health Check ----------------
  */

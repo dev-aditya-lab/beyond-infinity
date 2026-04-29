@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 export const generateApiKey = async () => {
   const prefix = "ops";
 
-  const rawKey = crypto.randomBytes(32).toString("hex");
+  const rawKey = crypto.randomBytes(20).toString("hex");
 
   const fullKey = `${prefix}_${rawKey}`;
 
