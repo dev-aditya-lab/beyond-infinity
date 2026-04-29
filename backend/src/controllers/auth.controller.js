@@ -57,3 +57,83 @@ export const sendOtp = async (req, res) => {
   }
 };
 
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: true,
+        message: "Email and Otp are required",
+      });
+    }
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.otp || !user.otpExpires) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found please request a new one.",
+      });
+    }
+
+    if (Date.now() > user.otpExpires) {
+      ((user.otp = undefined), (user.otpExpires = undefined), (user.otpAttempts = 0));
+
+      await user.save();
+
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one.",
+      });
+    }
+
+    if (user.otpAttempts >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: "To many failed attempts. Request a new OTP.",
+      });
+    }
+
+    const hashedInputOtp = hashOTP(otp);
+
+    // ❌ Invalid OTP
+    if (hashedInputOtp !== user.otp) {
+      user.otpAttempts += 1;
+      await user.save();
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    // ✅ OTP verified successfully
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    user.otpAttempts = 0;
+    user.lastOtpSent = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};

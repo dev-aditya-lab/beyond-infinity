@@ -1,8 +1,10 @@
 import express from "express";
-import { sendOtp } from "../controllers/auth.controller.js";
+import { sendOtp, verifyOtp } from "../controllers/auth.controller.js";
 
 const authRouter = express.Router();
 
-authRouter.post("/register", sendOtp);
+authRouter.post("/sendOtp", sendOtp);
+
+authRouter.post("/verifyOtp", verifyOtp);
 
 export default authRouter;

@@ -31,6 +31,14 @@ export const hashOTP = (otp) => {
 //! it returns true if OTP is valid, false otherwise
 
 export const verifyOTP = (inputOtp, storedHashedOtp) => {
+  if (!inputOtp || !storedHashedOtp) return false;
+
   const hashedInput = hashOTP(inputOtp);
-  return crypto.timingSafeEqual(Buffer.from(hashedInput), Buffer.from(storedHashedOtp));
+
+  const a = Buffer.from(hashedInput);
+  const b = Buffer.from(storedHashedOtp);
+
+  if (a.length !== b.length) return false;
+
+  return crypto.timingSafeEqual(a, b);
 };
