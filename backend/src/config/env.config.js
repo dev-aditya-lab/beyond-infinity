@@ -37,7 +37,7 @@ const toNumber = (value, key) => {
  */
 export const ENV = Object.freeze({
   // ===== App Config =====
-  PORT: toNumber(optionalEnv("PORT", 5000), "PORT"),
+  PORT: toNumber(optionalEnv("PORT", 3000), "PORT"),
   NODE_ENV: optionalEnv("NODE_ENV", "development"),
 
   // ===== Database =====

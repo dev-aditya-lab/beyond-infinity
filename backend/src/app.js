@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { ENV } from "./config/env.config.js";
 // Routes
 import apiRouter from "./routes/apiKey.routes.js";
+import authRouter from "./routes/auth.routes.js";
 // import authRouter from "./routes/auth.routes.js";
 
 const app = express();
@@ -38,6 +39,9 @@ app.use(cookieParser());
  */
 // app.use("/api/auth", authRouter);
 app.use("/api/keys", apiRouter);
+
+// app.use("/api/auth", authRouter);
+app.use("/api/auth", authRouter);
 /**
  * ---------------- Health Check ----------------
  */
