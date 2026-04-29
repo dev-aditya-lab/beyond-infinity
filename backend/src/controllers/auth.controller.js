@@ -1,10 +1,11 @@
 import userModel from "../models/user.model.js";
-import { generateOTP, hashOTP } from "../utils/OtpSystem/generateOTP.js";
+import { generateOTP, hashOTP, verifyOTP } from "../utils/OtpSystem/generateOTP.js";
 import { sendOTPEmail } from "../services/mail/mail.service.js";
+import jwt from "jsonwebtoken";
 
 export const sendOtp = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, avatar } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -15,11 +16,21 @@ export const sendOtp = async (req, res) => {
 
     let user = await userModel.findOne({ email });
 
+    // 🟢 CREATE USER IF NOT EXISTS (REGISTER STEP INSIDE OTP FLOW)
     if (!user) {
       user = await userModel.create({
         email,
-        name,
+        name: name || "",
+        avatar: avatar || "",
+        role: "employee", // 🔥 ALWAYS BACKEND CONTROLLED
+        isVerified: false,
       });
+    } else {
+      // 🟡 OPTIONAL: update name/avatar if provided
+      if (name || avatar) {
+        user.name = name || user.name;
+        user.avatar = avatar || user.avatar;
+      }
     }
 
     // ⛔ Rate limit (30 sec)
@@ -30,12 +41,19 @@ export const sendOtp = async (req, res) => {
       });
     }
 
-    const otp = generateOTP(6);
+    // ⛔ inactive check
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account is disabled",
+      });
+    }
 
+    const otp = generateOTP(6);
     const hashedOTP = hashOTP(otp);
 
     user.otp = hashedOTP;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
+    user.otpExpires = Date.now() + 5 * 60 * 1000;
     user.lastOtpSent = Date.now();
     user.otpAttempts = 0;
 
@@ -61,13 +79,6 @@ export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    if (!email || !otp) {
-      return res.status(400).json({
-        success: true,
-        message: "Email and Otp are required",
-      });
-    }
-
     const user = await userModel.findOne({ email });
 
     if (!user) {
@@ -80,32 +91,20 @@ export const verifyOtp = async (req, res) => {
     if (!user.otp || !user.otpExpires) {
       return res.status(400).json({
         success: false,
-        message: "OTP not found please request a new one.",
+        message: "OTP not found",
       });
     }
 
     if (Date.now() > user.otpExpires) {
-      ((user.otp = undefined), (user.otpExpires = undefined), (user.otpAttempts = 0));
-
-      await user.save();
-
       return res.status(400).json({
         success: false,
-        message: "OTP expired. Please request a new one.",
+        message: "OTP expired",
       });
     }
 
-    if (user.otpAttempts >= 5) {
-      return res.status(429).json({
-        success: false,
-        message: "To many failed attempts. Request a new OTP.",
-      });
-    }
+    const isValid = verifyOTP(otp, user.otp);
 
-    const hashedInputOtp = hashOTP(otp);
-
-    // ❌ Invalid OTP
-    if (hashedInputOtp !== user.otp) {
+    if (!isValid) {
       user.otpAttempts += 1;
       await user.save();
 
@@ -115,22 +114,55 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // ✅ OTP verified successfully
+    // ✅ OTP SUCCESS → LOGIN COMPLETE
+
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
     user.otpAttempts = 0;
-    user.lastOtpSent = undefined;
 
     await user.save();
 
+    // 🔐 JWT GENERATE
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("token", token, {
+      sameSite: "Strict",
+      httpOnly: true,
+      secure: true,
+    });
+
     return res.status(200).json({
       success: true,
-      message: "OTP verified successfully",
+      message: "Login successful",
+      user,
     });
   } catch (error) {
     console.error("Verify OTP Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
 
+export const getMe = async (req, res) => {
+  const user = await userModel.findById(req.user.id);
+
+  try {
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Something went wrong",
