@@ -36,7 +36,6 @@ const startServer = async () => {
       console.log(`Server running on port ${ENV.PORT}`);
       console.log(`Environment: ${ENV.NODE_ENV}`);
     });
-
   } catch (error) {
     console.error("Failed to start server:", error.message);
     process.exit(1);
@@ -57,7 +56,6 @@ const shutdown = async (signal) => {
       console.log("💤 Server closed");
       process.exit(0);
     });
-
   } catch (error) {
     console.error("❌ Error during shutdown:", error.message);
     process.exit(1);
