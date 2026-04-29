@@ -22,6 +22,11 @@ const apiKeySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    keyId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
 
     lastUsedAt: Date,
 
