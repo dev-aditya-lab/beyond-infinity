@@ -1,130 +1,158 @@
 import userModel from "../models/user.model.js";
 import { generateOTP, hashOTP, verifyOTP } from "../utils/OtpSystem/generateOTP.js";
 import { sendOTPEmail } from "../services/mail/mail.service.js";
+import redisOTPService from "../services/redis/redis.otp.service.js";
 import jwt from "jsonwebtoken";
 import redisClient from "../config/redis/redis.config.js";
+import { AUTH_CONSTANTS, AUTH_MESSAGES, ROLES } from "../constants/auth.constants.js";
 
-export const registerController = async (req, res) => {
+/**
+ * Send OTP to email
+ * Creates or updates user and sends OTP via Redis
+ * @route POST /auth/send-otp
+ */
+export const sendOTPController = async (req, res) => {
   try {
-    const { name, email, avatar, role } = req.body;
+    const { email, name, role, avatar } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required",
-      });
-    }
-
+    // Find or create user
     let user = await userModel.findOne({ email });
 
-    // 🟢 CREATE USER IF NOT EXISTS (REGISTER STEP INSIDE OTP FLOW)
     if (!user) {
       user = await userModel.create({
         email,
         name: name || "",
         avatar: avatar || "",
-        role: role,
+        role: role || ROLES.EMPLOYEE,
         isVerified: false,
       });
     } else {
-      // 🟡 OPTIONAL: update name/avatar if provided
-      if (name || avatar) {
-        user.name = name || user.name;
-        user.avatar = avatar || user.avatar;
-      }
+      // Update user info if provided
+      if (name) user.name = name;
+      if (avatar) user.avatar = avatar;
+      if (role) user.role = role;
+      await user.save();
     }
 
-    // ⛔ Rate limit (30 sec)
-    if (user.lastOtpSent && Date.now() - user.lastOtpSent < 30000) {
-      return res.status(429).json({
-        success: false,
-        message: "Please wait before requesting another OTP",
-      });
-    }
-
-    // ⛔ inactive check
+    // Check if account is active
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
-        message: "Account is disabled",
+        message: AUTH_MESSAGES.ACCOUNT_DISABLED,
       });
     }
 
-    const otp = generateOTP(6);
+    // ✅ Check rate limit using Redis
+    const { canRequest, secondsLeft } = await redisOTPService.checkOTPRateLimit(email);
+
+    if (!canRequest) {
+      return res.status(429).json({
+        success: false,
+        message: AUTH_MESSAGES.OTP_RATE_LIMITED,
+        retryAfter: secondsLeft,
+      });
+    }
+
+    // ✅ Generate OTP and hash it
+    const otp = generateOTP(AUTH_CONSTANTS.OTP_LENGTH);
     const hashedOTP = hashOTP(otp);
 
-    user.otp = hashedOTP;
-    user.otpExpires = Date.now() + 5 * 60 * 1000;
-    user.lastOtpSent = Date.now();
-    user.otpAttempts = 0;
+    // ✅ Store OTP in Redis (auto-expires after 5 minutes)
+    await redisOTPService.storeOTP(email, hashedOTP);
 
-    await user.save();
+    // ✅ Set rate limit in Redis (30 seconds)
+    await redisOTPService.setOTPRateLimit(email);
 
+    // ✅ Reset attempts counter
+    await redisOTPService.resetOTPAttempts(email);
+
+    // Send OTP via email
     await sendOTPEmail(email, otp);
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      message: AUTH_MESSAGES.OTP_SENT,
+      data: {
+        email,
+      },
     });
   } catch (error) {
     console.error("Send OTP Error:", error);
-
     return res.status(500).json({
       success: false,
-      message: "Something went wrong",
+      message: AUTH_MESSAGES.SEND_OTP_ERROR,
     });
   }
 };
 
-export const LoginController = async (req, res) => {
+/**
+ * Verify OTP and login user
+ * @route POST /auth/verify-otp
+ */
+export const verifyOTPController = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
+    // Find user
     const user = await userModel.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: AUTH_MESSAGES.USER_NOT_FOUND,
       });
     }
 
-    if (!user.otp || !user.otpExpires) {
+    // ✅ Check if OTP exists in Redis
+    const otpExists = await redisOTPService.OTPExists(email);
+
+    if (!otpExists) {
       return res.status(400).json({
         success: false,
-        message: "OTP not found",
+        message: AUTH_MESSAGES.OTP_NOT_SENT,
       });
     }
 
-    if (Date.now() > user.otpExpires) {
-      return res.status(400).json({
+    // ✅ Get current attempt count
+    const attempts = await redisOTPService.getOTPAttempts(email);
+
+    if (attempts >= AUTH_CONSTANTS.MAX_OTP_ATTEMPTS) {
+      // Clear OTP and attempts
+      await redisOTPService.clearAllOTPData(email);
+
+      return res.status(403).json({
         success: false,
-        message: "OTP expired",
+        message: AUTH_MESSAGES.OTP_ATTEMPTS_EXCEEDED,
       });
     }
 
-    const isValid = verifyOTP(otp, user.otp);
+    // ✅ Get stored OTP from Redis
+    const storedHashedOTP = await redisOTPService.getOTP(email);
+
+    // Verify OTP
+    const isValid = verifyOTP(otp, storedHashedOTP);
 
     if (!isValid) {
-      user.otpAttempts += 1;
-      await user.save();
+      // Increment attempts
+      const newAttempts = await redisOTPService.incrementOTPAttempts(email);
+      const attemptsLeft = AUTH_CONSTANTS.MAX_OTP_ATTEMPTS - newAttempts;
 
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP",
+        message: AUTH_MESSAGES.INVALID_OTP,
+        attemptsLeft,
       });
     }
 
-    // ✅ OTP SUCCESS → LOGIN COMPLETE
-
+    // ✅ OTP verification successful
     user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
-    user.otpAttempts = 0;
-
+    user.lastLogin = new Date();
     await user.save();
 
-    // 🔐 JWT GENERATE
+    // ✅ Delete all OTP data from Redis
+    await redisOTPService.clearAllOTPData(email);
+
+    // Generate JWT token
     const token = jwt.sign(
       {
         id: user._id,
@@ -132,66 +160,113 @@ export const LoginController = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: AUTH_CONSTANTS.JWT_EXPIRY }
     );
 
-    res.cookie("token", token, {
-      sameSite: "Strict",
-      httpOnly: true,
-      secure: true,
-    });
+    // Set secure cookie
+    res.cookie("token", token, AUTH_CONSTANTS.COOKIE_OPTIONS);
+
+    // Prepare user response (exclude sensitive fields)
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      isVerified: user.isVerified,
+    };
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
-      user,
+      message: AUTH_MESSAGES.LOGIN_SUCCESS,
+      data: {
+        user: userResponse,
+        token,
+      },
     });
   } catch (error) {
     console.error("Verify OTP Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong",
+      message: AUTH_MESSAGES.VERIFY_OTP_ERROR,
     });
   }
 };
 
-export const getMe = async (req, res) => {
-  const user = await userModel.findById(req.user.id);
-
+/**
+ * Get current authenticated user
+ * @route GET /auth/me
+ */
+export const getMeController = async (req, res) => {
   try {
+    const user = await userModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: AUTH_MESSAGES.USER_NOT_FOUND,
+      });
+    }
+
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt,
+    };
+
     return res.status(200).json({
       success: true,
-      user,
+      message: AUTH_MESSAGES.USER_FETCHED,
+      data: {
+        user: userResponse,
+      },
     });
   } catch (error) {
+    console.error("Get Me Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong",
+      message: "Failed to fetch user details",
     });
   }
 };
 
-export const logOutController = async (req, res) => {
+/**
+ * Logout user
+ * Clear token from cookies and blacklist token in Redis
+ * @route POST /auth/logout
+ */
+export const logoutController = async (req, res) => {
   try {
     const token = req.cookies.token;
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized, token missing",
+        message: AUTH_MESSAGES.TOKEN_MISSING,
       });
     }
 
+    // Clear cookie
     res.clearCookie("token");
 
-    await redisClient.set(token, Date.now().toString(), "EX", 60 * 60);
+    // Blacklist token in Redis for remaining JWT expiry time
+    const tokenExpiry = 7 * 24 * 60 * 60; // 7 days in seconds (JWT_EXPIRY)
+    await redisClient.set(token, "blacklisted", "EX", tokenExpiry);
 
-    res.status(200).json({
-      message: "logout successfully.",
+    return res.status(200).json({
+      success: true,
+      message: AUTH_MESSAGES.LOGOUT_SUCCESS,
     });
   } catch (error) {
-    res.status(500).json({
-      error: error.message,
+    console.error("Logout Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: AUTH_MESSAGES.LOGOUT_ERROR,
     });
   }
 };
