@@ -22,7 +22,7 @@ const generateKey = async () => {
  */
 export const createApiKey = async (req, res) => {
   try {
-    const { name, permissions = [] } = req.body;
+    const { name } = req.body;
 
     const { rawKey, hash, prefix, keyId } = await generateKey();
 
@@ -32,7 +32,6 @@ export const createApiKey = async (req, res) => {
       prefix,
       keyId,
       user: req.user._id,
-      permissions,
     });
 
     return res.status(201).json({
@@ -44,7 +43,8 @@ export const createApiKey = async (req, res) => {
         keyId: apiKey.keyId,
         createdAt: apiKey.createdAt,
       },
-      key: rawKey, // ⚠️ show only once
+      APIkey: rawKey, // ⚠️ show only once
+      message: "⚠️ Please copy the API key now. It won't be shown again for security reasons.",
     });
   } catch (error) {
     return res.status(500).json({

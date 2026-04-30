@@ -4,9 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 
 import { ENV } from "./config/env.config.js";
-
-// Routes
-// import authRouter from "./routes/auth.routes.js";
+import apiRouter from "./routes/apiKey.routes.js";
+import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -14,10 +13,8 @@ const app = express();
  * ---------------- Middleware ----------------
  */
 
-// Logging
 app.use(morgan(ENV.NODE_ENV === "production" ? "combined" : "dev"));
 
-// CORS
 app.use(
   cors({
     origin: ENV.CORS_ORIGIN,
@@ -26,22 +23,21 @@ app.use(
   })
 );
 
-// Body parsers
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// Cookies
 app.use(cookieParser());
 
 /**
  * ---------------- Routes ----------------
  */
-// app.use("/api/auth", authRouter);
-// app.use("/api/chats", chatRoute);
+
+app.use("/api/keys", apiRouter);
+app.use("/api/auth", authRouter);
 
 /**
  * ---------------- Health Check ----------------
  */
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -54,6 +50,7 @@ app.get("/health", (req, res) => {
 /**
  * ---------------- 404 Handler ----------------
  */
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -64,6 +61,7 @@ app.use((req, res) => {
 /**
  * ---------------- Global Error Handler ----------------
  */
+
 app.use((err, req, res, _next) => {
   console.error("❌ Error:", err.message);
 
