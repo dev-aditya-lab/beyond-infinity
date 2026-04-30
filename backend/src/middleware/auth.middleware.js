@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import userModel from "../models/user.model.js";
 import { ENV } from "../config/env.config.js";
+import redisClient from "../config/redis/redis.config.js";
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -10,6 +11,14 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: "Not authorized, token missing",
+      });
+    }
+
+    const isTokenBlacklisted = await redisClient.get(token);
+
+    if (isTokenBlacklisted) {
+      return res.status(401).json({
+        message: "Invalid token",
       });
     }
 

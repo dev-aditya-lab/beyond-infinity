@@ -31,8 +31,6 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       html,
     });
 
-    console.log(`📧 Email sent to ${to} | ID: ${response?.data?.id}`);
-
     return {
       success: true,
       message: "Email sent successfully",

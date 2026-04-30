@@ -51,7 +51,7 @@ export const ENV = Object.freeze({
 
   // ===== Redis =====
   REDIS: {
-    USERNAME: optionalEnv("REDIS_USERNAME", "default"),
+    // USERNAME: optionalEnv("REDIS_USERNAME", "default"),
     HOST: requireEnv("REDIS_HOST"),
     PORT: toNumber(requireEnv("REDIS_PORT"), "REDIS_PORT"),
     PASSWORD: requireEnv("REDIS_PASSWORD"),

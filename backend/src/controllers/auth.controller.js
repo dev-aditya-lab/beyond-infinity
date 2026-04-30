@@ -2,10 +2,11 @@ import userModel from "../models/user.model.js";
 import { generateOTP, hashOTP, verifyOTP } from "../utils/OtpSystem/generateOTP.js";
 import { sendOTPEmail } from "../services/mail/mail.service.js";
 import jwt from "jsonwebtoken";
+import redisClient from "../config/redis/redis.config.js";
 
 export const sendOtp = async (req, res) => {
   try {
-    const { name, email, avatar } = req.body;
+    const { name, email, avatar, role } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -22,7 +23,7 @@ export const sendOtp = async (req, res) => {
         email,
         name: name || "",
         avatar: avatar || "",
-        role: "employee", // 🔥 ALWAYS BACKEND CONTROLLED
+        role: role,
         isVerified: false,
       });
     } else {
@@ -166,6 +167,31 @@ export const getMe = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong",
+    });
+  }
+};
+
+export const logOutController = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized, token missing",
+      });
+    }
+
+    res.clearCookie("token");
+
+    await redisClient.set(token, Date.now().toString(), "EX", 60 * 60);
+
+    res.status(200).json({
+      message: "logout successfully.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
     });
   }
 };
