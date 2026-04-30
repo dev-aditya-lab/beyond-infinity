@@ -37,7 +37,7 @@ const toNumber = (value, key) => {
  */
 export const ENV = Object.freeze({
   // ===== App Config =====
-  PORT: toNumber(optionalEnv("PORT", 5000), "PORT"),
+  PORT: toNumber(optionalEnv("PORT", 3000), "PORT"),
   NODE_ENV: optionalEnv("NODE_ENV", "development"),
 
   // ===== Database =====
@@ -51,7 +51,7 @@ export const ENV = Object.freeze({
 
   // ===== Redis =====
   REDIS: {
-    USERNAME: optionalEnv("REDIS_USERNAME", "default"),
+    // USERNAME: optionalEnv("REDIS_USERNAME", "default"),
     HOST: requireEnv("REDIS_HOST"),
     PORT: toNumber(requireEnv("REDIS_PORT"), "REDIS_PORT"),
     PASSWORD: requireEnv("REDIS_PASSWORD"),

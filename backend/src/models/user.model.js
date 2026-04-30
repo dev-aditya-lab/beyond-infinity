@@ -1,0 +1,66 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, "Please use a valid email"],
+    },
+
+    role: {
+      type: String,
+      enum: ["admin", "employee"],
+      default: "employee",
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    lastLogin: {
+      type: Date,
+    },
+
+    // OTP fields
+    otp: {
+      type: String,
+    },
+
+    otpExpires: {
+      type: Date,
+    },
+
+    lastOtpSent: {
+      type: Date,
+    },
+
+    otpAttempts: {
+      type: Number,
+      default: 0,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("User", userSchema);
