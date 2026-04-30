@@ -4,7 +4,7 @@ import { sendOTPEmail } from "../services/mail/mail.service.js";
 import jwt from "jsonwebtoken";
 import redisClient from "../config/redis/redis.config.js";
 
-export const sendOtp = async (req, res) => {
+export const registerController = async (req, res) => {
   try {
     const { name, email, avatar, role } = req.body;
 
@@ -76,7 +76,7 @@ export const sendOtp = async (req, res) => {
   }
 };
 
-export const verifyOtp = async (req, res) => {
+export const LoginController = async (req, res) => {
   try {
     const { email, otp } = req.body;
 

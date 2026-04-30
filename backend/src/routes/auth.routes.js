@@ -1,12 +1,18 @@
 import express from "express";
-import { getMe, logOutController, sendOtp, verifyOtp } from "../controllers/auth.controller.js";
+import {
+  getMe,
+  logOutController,
+  registerController,
+  LoginController,
+} from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { validateLogin, validateRegister } from "../validators/auth.validator.js";
 
 const authRouter = express.Router();
 
-authRouter.post("/sendOtp", sendOtp);
+authRouter.post("/register", validateRegister, registerController);
 
-authRouter.post("/verifyOtp", verifyOtp);
+authRouter.post("/login", validateLogin, LoginController);
 
 authRouter.get("/me", authMiddleware, getMe);
 
