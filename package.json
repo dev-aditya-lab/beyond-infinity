@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/dev-aditya-lab/beyond-infinity/issues"
   },
-  "homepage": "https://github.com/dev-aditya-lab/beyond-infinity#readme"
+  "homepage": "https://github.com/dev-aditya-lab/beyond-infinity#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
 }

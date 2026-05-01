@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 
 // ── Edit your nav links here ──────────────────────────────────────────────────
@@ -19,6 +20,7 @@ const socialItems = [
 
 export default function StaggeredMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const onToggle = () => setIsOpen(!isOpen);
 
   const panelRef      = useRef(null);
@@ -90,8 +92,29 @@ export default function StaggeredMenu() {
     else        animateClose();
   }, [isOpen, animateOpen, animateClose]);
 
-  const handleLinkClick = (e, href) => {
+  const [isNavigating, setIsNavigating] = useState(false);
+
+const handleLinkClick = (e, href) => {
     e.preventDefault();
+    
+    // Navigate to auth route if login is clicked
+    if (href === '#login') {
+      setIsNavigating(true);
+      
+      // Cinematic fade to black before navigation
+      gsap.to('body', {
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          navigate('/auth');
+          setTimeout(() => setIsNavigating(false), 100);
+        }
+      });
+      
+      return;
+    }
+    
     onToggle();
     setTimeout(() => {
       const id = href.replace('#', '');
@@ -103,6 +126,16 @@ export default function StaggeredMenu() {
 
   return (
     <div className="font-barlow">
+      {/* Cinematic navigation overlay */}
+      {isNavigating && (
+        <div className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-md pointer-events-none flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-brand-offwhite/20 border-t-brand-offwhite rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-brand-offwhite/60 font-barlow uppercase tracking-widest">NAVIGATING</p>
+          </div>
+        </div>
+      )}
+
       {/* Toggle button */}
       <button 
         className={`
@@ -111,12 +144,15 @@ export default function StaggeredMenu() {
           backdrop-blur-md font-inherit text-xs tracking-[0.15em] cursor-pointer uppercase
           transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]
           hover:bg-[#f0f0fa]/15 hover:border-[#f0f0fa]
-          ${isOpen ? 'border-[#f0f0fa]/10 lg:-translate-x-[clamp(260px,38vw,420px)]' : ''}
+          ${isOpen || isNavigating ? 'border-[#f0f0fa]/10 lg:-translate-x-[clamp(260px,38vw,420px)]' : ''}
         `} 
         onClick={onToggle}
+        disabled={isNavigating}
       >
         <span className="relative overflow-hidden h-[1.5em] w-[3em]">
-          <span ref={menuLabelRef} className="block absolute left-0 w-full text-center font-inherit">MENU</span>
+          <span ref={menuLabelRef} className="block absolute left-0 w-full text-center font-inherit">
+            {isNavigating ? 'NAVIGATING...' : 'MENU'}
+          </span>
           <span ref={closeLabelRef} className="block absolute left-0 w-full text-center font-inherit" style={{ top: '100%' }}>CLOSE</span>
         </span>
         <span 

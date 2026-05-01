@@ -17,54 +17,41 @@
 }
 
 @layer components {
-  /* GHOST BUTTON */
+  /* GHOST BUTTON COMPONENTS */
   .btn-ghost {
-    background: rgba(240,240,250,0.07);
-    border: 1px solid rgba(240,240,250,0.32);
-    border-radius: 32px;
-    padding: 18px 42px;
-    color: #f0f0fa;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.3s, border-color 0.3s;
-    display: inline-block;
+    @apply bg-brand-offwhite/7 border border-brand-offwhite/32 rounded-[32px] 
+           px-[42px] py-[18px] text-brand-offwhite font-barlow 
+           text-xs tracking-[0.2em] uppercase cursor-pointer 
+           transition-all duration-300 inline-block
+           hover:bg-brand-offwhite/16 hover:border-brand-offwhite/72;
   }
-  .btn-ghost:hover {
-    background: rgba(240,240,250,0.16);
-    border-color: rgba(240,240,250,0.72);
-  }
+  
   .btn-ghost-sm {
-    padding: 12px 28px;
-    font-size: 11px;
+    @apply px-[28px] py-[12px] text-[11px];
   }
 
-  /* SCANLINES */
+  /* SCANLINES COMPONENT */
   .scanlines {
-    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    @apply absolute inset-0 z-[1] pointer-events-none;
     background: repeating-linear-gradient(
       0deg, transparent, transparent 2px,
       rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
     );
   }
 
-  /* PULSE ANIMATION */
+  /* PULSE ANIMATION COMPONENTS */
   .pulse-ring {
-    position: absolute;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: rgba(240,240,250,0.5);
+    @apply absolute w-[10px] h-[10px] rounded-full bg-brand-offwhite/50;
     animation: pulseRing 2s ease-out infinite;
   }
 
-  .svg-layer { animation: svgPulse 6s ease-in-out infinite; }
+  .svg-layer { 
+    animation: svgPulse 6s ease-in-out infinite; 
+  }
 }
 
 @layer utilities {
-
-
+  /* LAYOUT UTILITIES */
   .flex-center {
     @apply flex justify-center items-center;
   }
@@ -77,7 +64,75 @@
     @apply flex justify-start items-center;
   }
 
-  
+  .flex-end {
+    @apply flex justify-end items-center;
+  }
+
+  /* OPS PULSE SPECIFIC UTILITIES */
+  .ops-container {
+    @apply min-h-screen bg-brand-bg text-brand-offwhite;
+  }
+
+  .ops-section {
+    @apply min-h-screen flex items-center justify-center relative overflow-hidden;
+  }
+
+  .ops-text-primary {
+    @apply font-bebas tracking-[0.05em] uppercase;
+  }
+
+  .ops-text-secondary {
+    @apply font-barlow tracking-[0.18em] uppercase opacity-50;
+  }
+
+  .ops-text-body {
+    @apply font-barlow text-[13px] leading-[1.7] tracking-[0.18em] uppercase;
+  }
+
+  .ops-text-nav {
+    @apply font-barlow text-[2.5rem] md:text-5xl leading-[1.15] tracking-[0.96px] uppercase;
+  }
+
+  .ops-text-system {
+    @apply font-barlow text-[0.81rem] tracking-[1.17px] uppercase;
+  }
+
+  /* ANIMATION UTILITIES */
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out;
+  }
+
+  .animate-pulse-ring {
+    animation: pulseRing 2s ease-out infinite;
+  }
+
+  .animate-svg-pulse {
+    animation: svgPulse 6s ease-in-out infinite;
+  }
+
+  /* BACKDROP UTILITIES */
+  .backdrop-ops {
+    backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .backdrop-light {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  /* OVERLAY UTILITIES */
+  .overlay-dark {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .overlay-medium {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .overlay-light {
+    background: rgba(0, 0, 0, 0.1);
+  }
 }
 
 @keyframes pulseRing {
