@@ -1,13 +1,14 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useNavigate } from 'react-router';
 import gsap from 'gsap';
 
 // ── Edit your nav links here ──────────────────────────────────────────────────
 const menuItems = [
-  { label: 'Home',             href: '#hero' },
-  { label: 'Features',         href: '#monitoring' },
-  { label: 'Incidents',        href: '#alerts' },
-  { label: 'Status',           href: '#response' },
-  { label: 'Login',            href: '#login' },
+  { label: 'Home',             href: '#hero', isNav: false },
+  { label: 'Features',         href: '#monitoring', isNav: false },
+  { label: 'Incidents',        href: '#alerts', isNav: false },
+  { label: 'Status',           href: '#response', isNav: false },
+  { label: 'Login',            href: '/login', isNav: true },
 ];
 
 // ── Edit your social links here ───────────────────────────────────────────────
@@ -18,6 +19,7 @@ const socialItems = [
 ];
 
 export default function StaggeredMenu() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const onToggle = () => setIsOpen(!isOpen);
 
@@ -90,13 +92,19 @@ export default function StaggeredMenu() {
     else        animateClose();
   }, [isOpen, animateOpen, animateClose]);
 
-  const handleLinkClick = (e, href) => {
+  const handleLinkClick = (e, href, isNav = false) => {
     e.preventDefault();
     onToggle();
-    setTimeout(() => {
-      const id = href.replace('#', '');
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    }, 700);
+    if (isNav) {
+      setTimeout(() => {
+        navigate(href);
+      }, 700);
+    } else {
+      setTimeout(() => {
+        const id = href.replace('#', '');
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 700);
+    }
   };
 
   const panelWidthClass = "w-full lg:w-[clamp(260px,38vw,420px)]";
@@ -158,7 +166,7 @@ export default function StaggeredMenu() {
             >
               <a 
                 href={item.href} 
-                onClick={(e) => handleLinkClick(e, item.href)}
+                onClick={(e) => handleLinkClick(e, item.href, item.isNav)}
                 className="block text-[2.5rem] md:text-5xl leading-[1.15] uppercase text-[#f0f0fa]/65 no-underline font-inherit font-bold tracking-[0.96px] relative transition-colors duration-300 pr-8 hover:text-[#f0f0fa] group before:content-['0'_counter(menu-counter,decimal)] before:absolute before:top-[0.5em] before:right-0 before:text-[0.81rem] before:tracking-[1.17px] before:text-[#f0f0fa] before:font-normal before:opacity-50 hover:before:opacity-100 before:transition-opacity before:duration-300"
               >
                 {item.label}

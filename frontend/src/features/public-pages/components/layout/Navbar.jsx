@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ const Navbar = () => {
         {/* ACTIONS */}
         <div className="hidden md:flex gap-5 items-center">
           <button
+            onClick={() => navigate("/login")}
             className="font-barlow text-[11px] tracking-[0.2em] uppercase text-brand-offwhite/65 hover:text-brand-offwhite bg-none border-none cursor-pointer transition-colors duration-200"
           >
             LOGIN
