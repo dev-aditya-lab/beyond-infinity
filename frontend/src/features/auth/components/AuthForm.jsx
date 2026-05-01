@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, User, Shield, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, User, Shield, ChevronDown, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuthActions, useAuthState, useAuthError, useOTPState } from '../hooks/useAuth';
 import OTPInput from './OTPInput';
 import { useDispatch, useSelector } from 'react-redux';
@@ -149,12 +149,13 @@ const AuthForm = ({ useRedux = false }) => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/[0.05] border border-brand-offwhite/20 rounded-lg text-brand-offwhite focus:outline-none focus:ring-2 focus:ring-brand-offwhite/20 focus:border-brand-offwhite/40 transition-all duration-200 appearance-none"
+                  className="w-full pl-10 pr-10 py-3 bg-white/[0.05] border border-brand-offwhite/20 rounded-lg text-brand-offwhite font-barlow text-sm tracking-[0.18em] uppercase focus:outline-none focus:ring-2 focus:ring-brand-offwhite/20 focus:border-brand-offwhite/40 transition-all duration-200 appearance-none cursor-pointer"
                   disabled={isLoading}
                 >
-                  <option value="employee">Employee</option>
-                  <option value="admin">Admin</option>
+                  <option value="employee" className="bg-black text-brand-offwhite">Employee</option>
+                  <option value="admin" className="bg-black text-brand-offwhite">Admin</option>
                 </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-brand-offwhite/40 pointer-events-none" />
               </div>
             </div>
           )}
