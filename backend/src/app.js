@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { ENV } from "./config/env.config.js";
 import apiRouter from "./routes/apiKey.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import errorRouter from "./routes/error.routes.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(cookieParser());
 
 app.use("/api/keys", apiRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/errors", errorRouter);
 
 /**
  * ---------------- Health Check ----------------
