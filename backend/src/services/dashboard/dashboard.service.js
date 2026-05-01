@@ -5,7 +5,6 @@
 
 import IncidentModel from "../../models/incident.model.js";
 import ErrorModel from "../../models/error.model.js";
-import UserModel from "../../models/user.model.js";
 
 /**
  * Get comprehensive dashboard stats
