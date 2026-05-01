@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import useIncidents from '../../hooks/useIncidents.js'
+import useIncidents from '../../../hooks/useIncidents.js'
 import { ChevronRight, AlertCircle, Clock, CheckCircle } from 'lucide-react'
 
 const severityColors = {

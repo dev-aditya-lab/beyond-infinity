@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import useIncidents from '../../hooks/useIncidents.js'
+import useIncidents from '../../../hooks/useIncidents.js'
 import { ArrowLeft, Clock, AlertCircle } from 'lucide-react'
 
 const statusOptions = ['open', 'in_progress', 'resolved']

@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
-import useAuth from '../../hooks/useAuth.js'
+import useAuth from '../../../hooks/useAuth.js'
 
 export const Signup = () => {
   const navigate = useNavigate()
