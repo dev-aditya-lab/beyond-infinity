@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import useIncidents from '../../../hooks/useIncidents.js'
+import useToast from '../../../hooks/useToast.jsx'
 import { ArrowLeft } from 'lucide-react'
 
 export const CreateIncident = () => {
@@ -18,6 +19,7 @@ export const CreateIncident = () => {
     description: '',
     assignee: '',
   })
+  const { toasts, removeToast, error: toastError, success } = useToast()
   const [formError, setFormError] = useState(null)
 
   const handleChange = (e) => {
@@ -44,9 +46,10 @@ export const CreateIncident = () => {
 
     try {
       await createIncident(formData)
+      success('Incident created successfully', 3000)
       navigate('/incidents')
     } catch (err) {
-      console.error('Create failed:', err)
+      toastError(err.message || 'Failed to create incident', 5000)
     }
   }
 
@@ -184,6 +187,8 @@ export const CreateIncident = () => {
           </div>
         </form>
       </div>
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }

@@ -1,12 +1,14 @@
+import { useNavigate } from 'react-router'
 /**
  * Incidents List Page
  * Display all incidents with filtering and pagination
  */
-
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 import useIncidents from '../../../hooks/useIncidents.js'
+import useToast from '../../../hooks/useToast.jsx'
+import { wsService } from '../../../services/websocket.service.js'
 import { ChevronRight, AlertCircle, Clock, CheckCircle } from 'lucide-react'
+import { CardSkeleton } from '../../../components/LoadingSkeleton.jsx'
+import { ToastContainer } from '../../../hooks/useToast.jsx'
 
 const severityColors = {
   critical: 'bg-red-900/20 text-red-400 border-red-700/50',
@@ -23,12 +25,44 @@ const statusIcons = {
 
 export const IncidentsList = () => {
   const navigate = useNavigate()
-  const { incidents, loading, error, getIncidents, setFilters, filters } = useIncidents()
+  const { incidents, loading, error, getIncidents, setFilters, filters, clearIncidentError } = useIncidents()
+  const { toasts, removeToast, error: toastError, success, warning } = useToast()
   const [statusFilter, setStatusFilter] = useState(null)
 
   useEffect(() => {
     // Fetch incidents on component mount
     getIncidents()
+      .catch((err) => {
+        toastError(err.message || 'Failed to fetch incidents', 5000)
+      })
+  }, [])
+
+  // Subscribe to real-time incident updates
+  useEffect(() => {
+    const handleIncidentUpdate = (data) => {
+      console.log('Incident update received:', data)
+      // Refresh incidents when update is received
+      getIncidents()
+      success('Incident updated', 3000)
+    }
+
+    const handleIncidentCreated = (data) => {
+      console.log('New incident created:', data)
+      getIncidents()
+      success('New incident created', 3000)
+    }
+
+    try {
+      wsService.subscribe('incident:updated', handleIncidentUpdate)
+      wsService.subscribe('incident:created', handleIncidentCreated)
+
+      return () => {
+        wsService.unsubscribe('incident:updated', handleIncidentUpdate)
+        wsService.unsubscribe('incident:created', handleIncidentCreated)
+      }
+    } catch (err) {
+      console.warn('WebSocket not available:', err)
+    }
   }, [])
 
   const handleStatusFilter = (status) => {
@@ -107,17 +141,16 @@ export const IncidentsList = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-700/50 rounded text-red-400 mb-6">
-            {error}
+          <div className="p-4 bg-red-900/20 border border-red-700/50 rounded text-red-400 mb-6 flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={clearIncidentError} className="text-sm underline">Dismiss</button>
           </div>
         )}
 
         {/* Loading State */}
         {loading && (
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-gray-900 rounded p-4 animate-pulse h-20" />
-            ))}
+            <CardSkeleton count={3} />
           </div>
         )}
 
@@ -180,6 +213,9 @@ export const IncidentsList = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }

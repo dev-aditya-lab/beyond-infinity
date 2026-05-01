@@ -6,6 +6,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
 import useAuth from '../../../hooks/useAuth.js'
+import useToast from '../../../hooks/useToast.jsx'
+import { ToastContainer } from '../../../hooks/useToast.jsx'
 
 export const Login = () => {
   const navigate = useNavigate()
@@ -14,6 +16,7 @@ export const Login = () => {
     email: '',
     password: '',
   })
+  const { toasts, removeToast, error: toastError, success } = useToast()
   const [formError, setFormError] = useState(null)
 
   const handleChange = (e) => {
@@ -42,13 +45,17 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!validateForm()) return
+    if (!validateForm()) {
+      toastError('Please fill in all fields correctly', 3000)
+      return
+    }
 
     try {
       await login(formData.email, formData.password)
+      success('Login successful!', 2000)
       navigate('/dashboard')
     } catch (err) {
-      console.error('Login failed:', err)
+      toastError(err.message || 'Login failed', 5000)
     }
   }
 
@@ -124,6 +131,7 @@ export const Login = () => {
           </p>
         </div>
       </div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }

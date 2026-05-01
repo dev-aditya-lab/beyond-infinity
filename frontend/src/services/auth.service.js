@@ -10,6 +10,13 @@
 import apiClient from './apiClient.js'
 import { API_ENDPOINTS } from '../config/api.js'
 
+// Storage keys
+const STORAGE_KEYS = {
+  TOKEN: 'authToken',
+  USER: 'user',
+  EXPIRY: 'tokenExpiry',
+}
+
 export const authService = {
   /**
    * Login user with email and password
@@ -23,11 +30,10 @@ export const authService = {
         email,
         password,
       })
-      const { token, user } = response.data
+      const { token, user, expiresIn } = response.data
       
-      // Store token and user
-      localStorage.setItem('authToken', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      // Store token and user with expiration
+      authService.persistToken(token, user, expiresIn)
       
       return response.data
     } catch (error) {
@@ -49,11 +55,10 @@ export const authService = {
         password,
         name,
       })
-      const { token, user } = response.data
+      const { token, user, expiresIn } = response.data
       
-      // Store token and user
-      localStorage.setItem('authToken', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      // Store token and user with expiration
+      authService.persistToken(token, user, expiresIn)
       
       return response.data
     } catch (error) {
@@ -62,12 +67,26 @@ export const authService = {
   },
 
   /**
+   * Persist token and user data to localStorage
+   * @param {string} token - Authentication token
+   * @param {Object} user - User data
+   * @param {number} expiresIn - Expiration time in seconds
+   */
+  persistToken: (token, user, expiresIn = 86400) => {
+    const expiryTime = Date.now() + expiresIn * 1000
+    localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+    localStorage.setItem(STORAGE_KEYS.EXPIRY, expiryTime.toString())
+  },
+
+  /**
    * Logout user
    * Clears tokens from localStorage
    */
   logout: () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
+    localStorage.removeItem(STORAGE_KEYS.TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.USER)
+    localStorage.removeItem(STORAGE_KEYS.EXPIRY)
   },
 
   /**
@@ -75,8 +94,26 @@ export const authService = {
    * @returns {Object|null} - Current user or null
    */
   getCurrentUser: () => {
-    const user = localStorage.getItem('user')
+    const user = localStorage.getItem(STORAGE_KEYS.USER)
     return user ? JSON.parse(user) : null
+  },
+
+  /**
+   * Get authentication token
+   * @returns {string|null} - Token or null
+   */
+  getToken: () => {
+    return localStorage.getItem(STORAGE_KEYS.TOKEN)
+  },
+
+  /**
+   * Check if token is expired
+   * @returns {boolean} - True if token is expired
+   */
+  isTokenExpired: () => {
+    const expiry = localStorage.getItem(STORAGE_KEYS.EXPIRY)
+    if (!expiry) return true
+    return Date.now() > parseInt(expiry)
   },
 
   /**
@@ -84,7 +121,13 @@ export const authService = {
    * @returns {boolean} - True if user has valid token
    */
   isAuthenticated: () => {
-    return !!localStorage.getItem('authToken')
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
+    if (!token) return false
+    if (authService.isTokenExpired()) {
+      authService.logout()
+      return false
+    }
+    return true
   },
 
   /**
@@ -94,9 +137,31 @@ export const authService = {
   verifyToken: async () => {
     try {
       const response = await apiClient.get(API_ENDPOINTS.AUTH_VERIFY)
+      const { token, user, expiresIn } = response.data
+      // Refresh token if still valid
+      if (token) {
+        authService.persistToken(token, user, expiresIn)
+      }
       return response.data
     } catch (error) {
+      authService.logout()
       return null
+    }
+  },
+
+  /**
+   * Refresh authentication token
+   * @returns {Promise} - New token data
+   */
+  refreshToken: async () => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH_REFRESH)
+      const { token, user, expiresIn } = response.data
+      authService.persistToken(token, user, expiresIn)
+      return response.data
+    } catch (error) {
+      authService.logout()
+      throw error
     }
   },
 }

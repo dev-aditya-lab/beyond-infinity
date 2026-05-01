@@ -1,11 +1,13 @@
+import { useNavigate, Link } from 'react-router'
 /**
  * Signup Page
  * User registration form with email, password, and name
  */
 
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router'
 import useAuth from '../../../hooks/useAuth.js'
+import useToast from '../../../hooks/useToast.jsx'
+import { ToastContainer } from '../../../hooks/useToast.jsx'
 
 export const Signup = () => {
   const navigate = useNavigate()
@@ -16,6 +18,7 @@ export const Signup = () => {
     password: '',
     confirmPassword: '',
   })
+  const { toasts, removeToast, error: toastError, success } = useToast()
   const [formError, setFormError] = useState(null)
 
   const handleChange = (e) => {
@@ -60,9 +63,10 @@ export const Signup = () => {
 
     try {
       await signup(formData.email, formData.password, formData.name)
+      success('Account created successfully!', 2000)
       navigate('/dashboard')
     } catch (err) {
-      console.error('Signup failed:', err)
+      toastError(err.message || 'Signup failed', 5000)
     }
   }
 
@@ -87,7 +91,7 @@ export const Signup = () => {
           {/* Name Field */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name
+              Name
             </label>
             <input
               type="text"
@@ -172,6 +176,8 @@ export const Signup = () => {
             </Link>
           </p>
         </div>
+        {/* Toasts */}
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
       </div>
     </div>
   )

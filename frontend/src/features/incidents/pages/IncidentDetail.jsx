@@ -6,7 +6,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import useIncidents from '../../../hooks/useIncidents.js'
+import useToast from '../../../hooks/useToast.jsx'
 import { ArrowLeft, Clock, AlertCircle } from 'lucide-react'
+import { ToastContainer } from '../../../hooks/useToast.jsx'
 
 const statusOptions = ['open', 'in_progress', 'resolved']
 const severityOptions = ['low', 'medium', 'high', 'critical']
@@ -14,7 +16,8 @@ const severityOptions = ['low', 'medium', 'high', 'critical']
 export const IncidentDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { currentIncident, loading, error, getIncidentById, updateIncident } = useIncidents()
+  const { currentIncident, loading, error, getIncidentById, updateIncident, clearIncidentError } = useIncidents()
+  const { toasts, removeToast, success, error: toastError } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({})
   const [updateLoading, setUpdateLoading] = useState(false)
@@ -22,6 +25,9 @@ export const IncidentDetail = () => {
   useEffect(() => {
     if (id) {
       getIncidentById(id)
+        .catch((err) => {
+          toastError(err.message || 'Failed to load incident', 5000)
+        })
     }
   }, [id])
 
@@ -35,9 +41,10 @@ export const IncidentDetail = () => {
     setUpdateLoading(true)
     try {
       await updateIncident(id, editData)
+      success('Incident updated successfully', 3000)
       setIsEditing(false)
     } catch (err) {
-      console.error('Update failed:', err)
+      toastError(err.message || 'Failed to update incident', 5000)
     } finally {
       setUpdateLoading(false)
     }
@@ -76,6 +83,7 @@ export const IncidentDetail = () => {
             <p className="text-gray-400">Incident not found</p>
           </div>
         </div>
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
       </div>
     )
   }
@@ -94,8 +102,9 @@ export const IncidentDetail = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-700/50 rounded text-red-400 mb-6">
-            {error}
+          <div className="p-4 bg-red-900/20 border border-red-700/50 rounded text-red-400 mb-6 flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={clearIncidentError} className="text-sm underline">Dismiss</button>
           </div>
         )}
 
@@ -240,6 +249,9 @@ export const IncidentDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }
