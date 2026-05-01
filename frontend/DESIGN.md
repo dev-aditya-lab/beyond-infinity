@@ -4,16 +4,18 @@
 
 OpsPulse's interface is a full-screen cinematic experience that treats incident response like a live mission — every section is a system state, every visual is a real-time snapshot, and the interface disappears entirely behind operational imagery. The design is pure black (`#000000`) with visuals of infrastructure, servers, dashboards, and network systems occupying 100% of the viewport. Text overlays sit directly on these visuals with no background panels, cards, or containers — just critical information on top of system context.
 
-The typography system uses D-DIN, an industrial geometric typeface with DIN heritage. The defining characteristic is that virtually ALL text is uppercase with positive letter-spacing (0.96px–1.17px), creating a command-line / control-room labeling system where every word feels like a system instruction or alert. D-DIN-Bold at 48px with uppercase and 0.96px tracking for the hero creates headlines that feel like mission-critical alerts. Even body text at 16px maintains the uppercase/tracked treatment at smaller scales.
+The typography system uses Bebas Neue for display and headings, providing an industrial geometric feel, and Barlow for body text and UI elements. The defining characteristic is that virtually ALL text is uppercase with positive letter-spacing (e.g., 0.05em for headings, up to 0.28em for micro text), creating a command-line / control-room labeling system where every word feels like a system instruction or alert. Bebas Neue at 48px+ with uppercase and tracking for the hero creates headlines that feel like mission-critical alerts. Even body text at smaller scales using Barlow maintains the uppercase/tracked treatment.
 
-What makes OpsPulse distinctive is its radical minimalism: no shadows, no borders (except one ghost button border at `rgba(240,240,250,0.35)`), no color (only black and a spectral near-white `#f0f0fa`), no cards, no grids. The only visual element is system imagery + text. The ghost button with `rgba(240,240,250,0.1)` background and 32px radius is the sole interactive element — barely visible, floating like a heads-up display. This isn't a traditional UI — it's a real-time operational interface with a type system and a single action layer.
+What makes OpsPulse distinctive is its radical minimalism: no shadows, no borders (except one ghost button border at `rgba(240,240,250,0.35)`), no color (only black and a spectral near-white `#f0f0fa` or Tailwind `brand-offwhite`), no cards, no grids. The only visual element is system imagery + text. The ghost button with `rgba(240,240,250,0.1)` background and 32px radius is the sole interactive element — barely visible, floating like a heads-up display. This isn't a traditional UI — it's a real-time operational interface with a type system and a single action layer.
 
 **Key Characteristics:**
 - Pure black canvas with full-viewport system visuals — the interface is invisible
-- D-DIN / D-DIN-Bold — industrial control-system typeface
-- Universal uppercase + positive letter-spacing (0.96px–1.17px) — command-line aesthetic
-- Near-white spectral text (`#f0f0fa`) — high visibility in dark environments
+- Bebas Neue / Barlow — industrial control-system typography
+- Universal uppercase + positive letter-spacing — command-line aesthetic
+- Near-white spectral text (`#f0f0fa` / `text-brand-offwhite`) — high visibility in dark environments
 - Zero shadows, zero cards, zero containers — text on visuals only
+- Utility-first styling with Tailwind CSS — ensuring consistent design tokens and responsive scaling
+- GSAP-powered animations — specifically for high-end staggered navigation elements
 - Single ghost button: `rgba(240,240,250,0.1)` background with spectral border
 - Full-viewport sections — each section is a system "state"
 - No decorative elements — every pixel serves operational clarity
@@ -35,20 +37,20 @@ What makes OpsPulse distinctive is its radical minimalism: no shadows, no border
 ## 3. Typography Rules
 
 ### Font Families
-- **Display**: `D-DIN-Bold` — bold industrial geometric
-- **Body / UI**: `D-DIN`, fallbacks: `Arial, Verdana`
+- **Display/Heading**: `Bebas Neue` (Tailwind class: `font-bebas`)
+- **Body/UI**: `Barlow` (Tailwind class: `font-barlow`)
 
 ### Hierarchy
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | D-DIN-Bold | 48px (3.00rem) | 700 | 1.00 (tight) | 0.96px | `text-transform: uppercase` |
-| Body | D-DIN | 16px (1.00rem) | 400 | 1.50–1.70 | normal | System information text |
-| Nav Link Bold | D-DIN | 13px (0.81rem) | 700 | 0.94 (tight) | 1.17px | `text-transform: uppercase` |
-| Nav Link | D-DIN | 12px (0.75rem) | 400 | 2.00 (relaxed) | normal | `text-transform: uppercase` |
-| Caption Bold | D-DIN | 13px (0.81rem) | 700 | 0.94 (tight) | 1.17px | `text-transform: uppercase` |
-| Caption | D-DIN | 12px (0.75rem) | 400 | 1.00 (tight) | normal | `text-transform: uppercase` |
-| Micro | D-DIN | 10px (0.63rem) | 400 | 0.94 (tight) | 1px | `text-transform: uppercase` |
+| Role | Font | Size / Tailwind Class | Line Height | Letter Spacing | Notes |
+|------|------|-----------------------|-------------|----------------|-------|
+| Display Hero | Bebas Neue | `text-[clamp(52px,8vw,108px)]` | `leading-[0.95]` | `tracking-[0.05em]` | `uppercase` |
+| Section Heading | Bebas Neue | `text-[clamp(42px,6vw,84px)]` | `leading-[0.95]` | `tracking-[0.05em]` | `uppercase` |
+| Stat Number | Bebas Neue | `text-[48px]` | default | `tracking-[0.06em]` | `text-brand-offwhite` |
+| SubText / Body | Barlow | `text-[13px]` | `leading-[1.7]` | `tracking-[0.18em]` | `uppercase`, text opacity 50% |
+| Section Label | Barlow | `text-[10px]` | default | `tracking-[0.28em]` | `uppercase`, text opacity 40% |
+| Nav Link | Barlow / inherit | `text-[2.5rem] md:text-5xl`| `leading-[1.15]` | `tracking-[0.96px]` | `uppercase`, GSAP animated |
+| System Link | Barlow / inherit | `text-[0.81rem]` | default | `tracking-[1.17px]` | `uppercase`, `font-normal` |
 
 ### Principles
 - **Universal uppercase**: All text behaves like system alerts or commands
@@ -76,11 +78,12 @@ What makes OpsPulse distinctive is its radical minimalism: no shadows, no border
 - Not present in landing experience. Focus is on monitoring and visibility.
 
 ### Navigation
-- Transparent overlay nav on visuals
-- D-DIN 13px weight 700, uppercase, 1.17px tracking
-- Signal white text
-- Logo: OpsPulse wordmark
-- Mobile: hamburger collapse
+- **Staggered Sidebar Menu** powered by GSAP
+- Fixed toggle button with interactive label swapping ("MENU" to "CLOSE")
+- Blur-backdrop pre-layers (`bg-black/50 backdrop-blur-[16px]`)
+- Large uppercase navigation links (`text-5xl`, tracking `0.96px`)
+- System Links with smaller typography (`text-[0.81rem]`, tracking `1.17px`)
+- Smooth scroll integration to internal page sections
 
 ### Image Treatment
 - Full-viewport (100vh) system visuals
@@ -167,10 +170,10 @@ What makes OpsPulse distinctive is its radical minimalism: no shadows, no border
 
 ### Quick Color Reference
 - Background: Ops Black (`#000000`)
-- Text: Signal White (`#f0f0fa`)
+- Text: Signal White (`#f0f0fa`) / Tailwind config: `text-brand-offwhite`
 - Button background: Ghost (`rgba(240, 240, 250, 0.1)`)
 - Button border: Ghost Border (`rgba(240, 240, 250, 0.35)`)
-- Overlay: `rgba(0, 0, 0, 0.5)`
+- Overlay: `rgba(0, 0, 0, 0.5)` / Tailwind: `bg-black/50`
 
 ### Example Component Prompts
 - "Create a full-viewport hero showing system alerts with overlay and uppercase heading"
