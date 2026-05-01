@@ -17,6 +17,11 @@ import {
   scoreAndAssignResponder,
   getAvailableResponders,
 } from "../../services/assignment/assignment.service.js";
+import {
+  socketEmitIncidentCreated,
+  socketEmitStatusChanged,
+  socketEmitAssigned,
+} from "../../services/socket/socket.integration.js";
 import UserModel from "../../models/user.model.js";
 
 /**
@@ -52,6 +57,9 @@ export const createIncidentManual = async (req, res, next) => {
     incident.tags = tags;
     incident.source = "manual";
     await incident.save();
+
+    // Emit socket event
+    socketEmitIncidentCreated(req.user.organizationId, incident);
 
     return res.status(201).json({
       success: true,
@@ -141,6 +149,9 @@ export const updateIncidentStatusHandler = async (req, res, next) => {
 
     const updated = await updateIncidentStatus(req.params.id, req.user.organizationId, status);
 
+    // Emit socket event
+    socketEmitStatusChanged(req.user.organizationId, req.params.id, status);
+
     return res.status(200).json({
       success: true,
       message: `Incident status updated to ${status}`,
@@ -211,6 +222,9 @@ export const assignIncident = async (req, res, next) => {
 
       finalUserIds = [assignmentResult.selectedResponder._id];
 
+      // Emit socket event
+      socketEmitAssigned(req.user.organizationId, incident._id, finalUserIds);
+
       return res.status(200).json({
         success: true,
         message: assignmentResult.recommendation,
@@ -231,6 +245,9 @@ export const assignIncident = async (req, res, next) => {
     }
 
     const updated = await assignIncidentToUsers(req.params.id, req.user.organizationId, userIds);
+
+    // Emit socket event
+    socketEmitAssigned(req.user.organizationId, req.params.id, userIds);
 
     return res.status(200).json({
       success: true,
