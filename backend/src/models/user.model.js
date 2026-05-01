@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema(
 
     avatar: {
       type: String,
-      default: "",
+      default:
+        "https://res.cloudinary.com/di77yygcs/image/upload/v1777048491/blog/csyh9zademalguzxpr9a.jpg",
     },
 
     isActive: {
