@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import ErrorModel from "../../models/error.model.js";
 import { generateErrorFingerprint } from "../../utils/aggregation/errorFingerprint.js";
+import { aggregateError } from "../../services/aggregation/aggregation.service.js";
 
 /**
  * Error Intake Controller
@@ -65,6 +66,15 @@ export const intakeError = async (req, res, next) => {
       errorTimestamp: timestamp ? new Date(timestamp) : new Date(),
     });
 
+    // ===== Process Through Aggregation Engine =====
+    // Check if error group threshold has been reached
+    const aggregationResult = await aggregateError({
+      organizationId,
+      service: service.toLowerCase().trim(),
+      error: error.trim(),
+      fingerprint,
+    });
+
     // ===== Response =====
     return res.status(201).json({
       success: true,
@@ -73,6 +83,11 @@ export const intakeError = async (req, res, next) => {
         errorId: errorRecord._id,
         fingerprint: errorRecord.fingerprint,
         service: errorRecord.service,
+        aggregation: {
+          groupCount: aggregationResult.groupCount,
+          shouldCreateIncident: aggregationResult.shouldCreate,
+          suggestedSeverity: aggregationResult.severity,
+        },
       },
     });
   } catch (err) {
