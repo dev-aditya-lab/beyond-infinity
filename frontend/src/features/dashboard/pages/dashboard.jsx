@@ -10,6 +10,7 @@ import { NAV_ITEMS } from '../dashboard.constants';
 import useIncidents from '../../../hooks/useIncidents.js';
 import useToast from '../../../hooks/useToast.jsx';
 import { ToastContainer } from '../../../hooks/useToast.jsx';
+import authService from '../../../services/auth.service.js';
 
 
 /* ─── ROOT ─── */
@@ -30,6 +31,8 @@ export default function OpsPulseDashboard() {
   }, []);
 
   useEffect(() => {
+    if (!authService.getToken()) return;
+
     getIncidents().catch((err) => {
       console.error('Failed to fetch dashboard data:', err);
     });

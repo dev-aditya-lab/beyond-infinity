@@ -1,11 +1,10 @@
 /**
  * Incidents Redux Slice
- * Manages incidents state:
- * - List of incidents
- * - Current incident details
- * - Loading states
- * - Error messages
- * - Filters
+ * Manages incidents state matching backend response format:
+ * - Backend returns _id (MongoDB), not id
+ * - Backend list returns { incidents: [], total }
+ * - Backend detail returns the incident object directly in data
+ * - Status enum: open | investigating | identified | resolved
  */
 
 import { createSlice } from '@reduxjs/toolkit'
@@ -18,8 +17,9 @@ const initialState = {
   filters: {
     status: null,
     severity: null,
-    page: 1,
-    limit: 20,
+    service: null,
+    limit: 50,
+    skip: 0,
   },
   total: 0,
 }
@@ -28,15 +28,26 @@ const incidentsSlice = createSlice({
   name: 'incidents',
   initialState,
   reducers: {
-    // Fetch incidents
+    // Fetch incidents list
     fetchIncidentsStart: (state) => {
       state.loading = true
       state.error = null
     },
     fetchIncidentsSuccess: (state, action) => {
       state.loading = false
-      state.incidents = action.payload.incidents
-      state.total = action.payload.total
+      // Backend returns { success, data: { incidents, total, ... } }
+      // or could return an array directly — handle both
+      const payload = action.payload
+      if (payload?.data) {
+        state.incidents = payload.data.incidents || payload.data || []
+        state.total = payload.data.total || state.incidents.length
+      } else if (Array.isArray(payload)) {
+        state.incidents = payload
+        state.total = payload.length
+      } else {
+        state.incidents = payload?.incidents || []
+        state.total = payload?.total || 0
+      }
       state.error = null
     },
     fetchIncidentsFailure: (state, action) => {
@@ -51,7 +62,8 @@ const incidentsSlice = createSlice({
     },
     fetchIncidentSuccess: (state, action) => {
       state.loading = false
-      state.currentIncident = action.payload
+      // Backend returns { success, data: incident }
+      state.currentIncident = action.payload?.data || action.payload
       state.error = null
     },
     fetchIncidentFailure: (state, action) => {
@@ -66,7 +78,9 @@ const incidentsSlice = createSlice({
     },
     createIncidentSuccess: (state, action) => {
       state.loading = false
-      state.incidents.unshift(action.payload)
+      const newIncident = action.payload?.data || action.payload
+      state.incidents.unshift(newIncident)
+      state.total += 1
       state.error = null
     },
     createIncidentFailure: (state, action) => {
@@ -74,49 +88,44 @@ const incidentsSlice = createSlice({
       state.error = action.payload
     },
 
-    // Update incident
-    updateIncidentStart: (state) => {
+    // Update incident status
+    updateStatusStart: (state) => {
       state.loading = true
       state.error = null
     },
-    updateIncidentSuccess: (state, action) => {
+    updateStatusSuccess: (state, action) => {
       state.loading = false
-      const index = state.incidents.findIndex((i) => i.id === action.payload.id)
-      if (index !== -1) {
-        state.incidents[index] = action.payload
+      const updated = action.payload?.data || action.payload
+      // Use _id (MongoDB) for matching
+      const idx = state.incidents.findIndex(
+        (i) => i._id === updated._id
+      )
+      if (idx !== -1) {
+        state.incidents[idx] = { ...state.incidents[idx], ...updated }
       }
-      state.currentIncident = action.payload
+      if (state.currentIncident?._id === updated._id) {
+        state.currentIncident = { ...state.currentIncident, ...updated }
+      }
       state.error = null
     },
-    updateIncidentFailure: (state, action) => {
-      state.loading = false
-      state.error = action.payload
-    },
-
-    // Delete incident
-    deleteIncidentStart: (state) => {
-      state.loading = true
-      state.error = null
-    },
-    deleteIncidentSuccess: (state, action) => {
-      state.loading = false
-      state.incidents = state.incidents.filter((i) => i.id !== action.payload)
-      state.currentIncident = null
-      state.error = null
-    },
-    deleteIncidentFailure: (state, action) => {
+    updateStatusFailure: (state, action) => {
       state.loading = false
       state.error = action.payload
     },
 
     // Set filters
     setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload, page: 1 }
+      state.filters = { ...state.filters, ...action.payload, skip: 0 }
     },
 
-    // Set page
+    // Set pagination
     setPage: (state, action) => {
-      state.filters.page = action.payload
+      state.filters.skip = action.payload * state.filters.limit
+    },
+
+    // Clear current incident
+    clearCurrentIncident: (state) => {
+      state.currentIncident = null
     },
 
     // Clear error
@@ -136,14 +145,12 @@ export const {
   createIncidentStart,
   createIncidentSuccess,
   createIncidentFailure,
-  updateIncidentStart,
-  updateIncidentSuccess,
-  updateIncidentFailure,
-  deleteIncidentStart,
-  deleteIncidentSuccess,
-  deleteIncidentFailure,
+  updateStatusStart,
+  updateStatusSuccess,
+  updateStatusFailure,
   setFilters,
   setPage,
+  clearCurrentIncident,
   clearError,
 } = incidentsSlice.actions
 

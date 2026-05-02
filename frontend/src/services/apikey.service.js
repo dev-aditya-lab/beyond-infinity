@@ -1,9 +1,9 @@
 /**
  * API Key Service
  * Handles all API key management:
- * - List API keys
- * - Create API key
- * - Revoke API key
+ * - List API keys (GET /api/keys)
+ * - Create API key (POST /api/keys)
+ * - Revoke API key (DELETE /api/keys/:id)
  */
 
 import apiClient from './apiClient.js'
@@ -38,30 +38,17 @@ export const apikeyService = {
   },
 
   /**
-   * Revoke API key
+   * Revoke (delete) API key
+   * Backend uses DELETE /api/keys/:id
    * @param {string} id - API key ID
    * @returns {Promise} - Revoke response
    */
   revokeKey: async (id) => {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.API_KEYS_REVOKE(id))
+      const response = await apiClient.delete(API_ENDPOINTS.API_KEYS_REVOKE(id))
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to revoke API key')
-    }
-  },
-
-  /**
-   * Get API key details
-   * @param {string} id - API key ID
-   * @returns {Promise} - API key details
-   */
-  getKeyById: async (id) => {
-    try {
-      const response = await apiClient.get(API_ENDPOINTS.API_KEYS_DETAIL(id))
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch API key')
     }
   },
 }

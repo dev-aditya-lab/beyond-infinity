@@ -1,6 +1,7 @@
 /**
  * useIncidents Hook
  * Provides easy access to incidents state and operations
+ * Matches backend API structure (status updates, assignments)
  * Usage: const { incidents, loading, getIncidents, createIncident } = useIncidents()
  */
 
@@ -16,14 +17,12 @@ import {
   createIncidentStart,
   createIncidentSuccess,
   createIncidentFailure,
-  updateIncidentStart,
-  updateIncidentSuccess,
-  updateIncidentFailure,
-  deleteIncidentStart,
-  deleteIncidentSuccess,
-  deleteIncidentFailure,
+  updateStatusStart,
+  updateStatusSuccess,
+  updateStatusFailure,
   setFilters as setFiltersAction,
   setPage as setPageAction,
+  clearCurrentIncident,
   clearError,
 } from '../features/incidents/incidents.slice.js'
 
@@ -40,6 +39,7 @@ export const useIncidents = () => {
 
   /**
    * Fetch all incidents with optional filters
+   * Backend supports: limit, skip, status, severity, service, tags
    */
   const getIncidents = async (filterParams = {}) => {
     dispatch(fetchIncidentsStart())
@@ -54,7 +54,7 @@ export const useIncidents = () => {
   }
 
   /**
-   * Get single incident by ID
+   * Get single incident by ID (MongoDB _id)
    */
   const getIncidentById = async (id) => {
     dispatch(fetchIncidentStart())
@@ -70,6 +70,8 @@ export const useIncidents = () => {
 
   /**
    * Create new incident
+   * Backend requires: title, service, severity
+   * Optional: description, tags
    */
   const createIncident = async (data) => {
     dispatch(createIncidentStart())
@@ -84,47 +86,53 @@ export const useIncidents = () => {
   }
 
   /**
-   * Update incident
+   * Update incident status
+   * Backend uses PUT /incidents/:id/status with { status }
+   * Valid values: open, investigating, identified, resolved
    */
-  const updateIncident = async (id, data) => {
-    dispatch(updateIncidentStart())
+  const updateIncidentStatus = async (id, status) => {
+    dispatch(updateStatusStart())
     try {
-      const response = await incidentService.updateIncident(id, data)
-      dispatch(updateIncidentSuccess(response))
+      const response = await incidentService.updateIncidentStatus(id, status)
+      dispatch(updateStatusSuccess(response))
       return response
     } catch (err) {
-      dispatch(updateIncidentFailure(err.message))
+      dispatch(updateStatusFailure(err.message))
       throw err
     }
   }
 
   /**
-   * Delete incident
+   * Assign incident to responders
    */
-  const deleteIncident = async (id) => {
-    dispatch(deleteIncidentStart())
+  const assignIncident = async (id, data) => {
     try {
-      const response = await incidentService.deleteIncident(id)
-      dispatch(deleteIncidentSuccess(id))
+      const response = await incidentService.assignIncident(id, data)
       return response
     } catch (err) {
-      dispatch(deleteIncidentFailure(err.message))
       throw err
     }
   }
 
   /**
-   * Set filters
+   * Set filters and reset pagination
    */
   const setFilters = (newFilters) => {
     dispatch(setFiltersAction(newFilters))
   }
 
   /**
-   * Set page
+   * Set page for pagination
    */
   const setPage = (page) => {
     dispatch(setPageAction(page))
+  }
+
+  /**
+   * Clear current incident detail
+   */
+  const clearIncident = () => {
+    dispatch(clearCurrentIncident())
   }
 
   /**
@@ -144,10 +152,11 @@ export const useIncidents = () => {
     getIncidents,
     getIncidentById,
     createIncident,
-    updateIncident,
-    deleteIncident,
+    updateIncidentStatus,
+    assignIncident,
     setFilters,
     setPage,
+    clearIncident,
     clearIncidentError,
   }
 }

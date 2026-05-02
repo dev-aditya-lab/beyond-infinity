@@ -1,8 +1,15 @@
+/**
+ * Landing Page Navbar — OpsPulse Theme
+ * Navigation with scroll-to for sections and working auth links
+ */
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -11,15 +18,18 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /** Smooth scroll to section by ID */
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  /** Nav links with matching section IDs */
   const NAV_LINKS = [
-    { label: "HOME",      id: "hero"      },
-    { label: "FEATURES",  id: "monitoring"},
-    { label: "INCIDENTS", id: "alerts"    },
-    { label: "STATUS",    id: "response"  },
+    { label: "HOME",      action: () => scrollTo("hero")       },
+    { label: "FEATURES",  action: () => scrollTo("monitoring") },
+    { label: "ALERTS",    action: () => scrollTo("alerts")     },
+    { label: "STATUS",    action: () => scrollTo("response")   },
+    { label: "ANALYTICS", action: () => scrollTo("analytics")  },
   ];
 
   return (
@@ -40,11 +50,11 @@ const Navbar = () => {
 
         {/* LINKS — hidden on mobile */}
         <div className="hidden md:flex gap-9 items-center">
-          {NAV_LINKS.map(({ label, id }) => (
+          {NAV_LINKS.map(({ label, action }) => (
             <button
-              key={id}
-              onClick={() => scrollTo(id)}
-              className="font-barlow text-[11px] tracking-[0.2em] uppercase text-brand-offwhite/65 hover:text-brand-offwhite bg-none border-none cursor-pointer transition-colors duration-200"
+              key={label}
+              onClick={action}
+              className="font-barlow text-[11px] tracking-[0.2em] uppercase text-brand-offwhite/65 hover:text-brand-offwhite bg-transparent border-none cursor-pointer transition-colors duration-200"
             >
               {label}
             </button>
@@ -53,16 +63,30 @@ const Navbar = () => {
 
         {/* ACTIONS */}
         <div className="hidden md:flex gap-5 items-center">
-          <button
-            onClick={() => navigate("/login")}
-            className="font-barlow text-[11px] tracking-[0.2em] uppercase text-brand-offwhite/65 hover:text-brand-offwhite bg-none border-none cursor-pointer transition-colors duration-200"
-          >
-            LOGIN
-          </button>
-          {/* <button className="btn-ghost btn-ghost-sm">SIGN UP</button> */}
+          {isAuthenticated ? (
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="btn-ghost btn-ghost-sm"
+            >
+              DASHBOARD
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/login")}
+                className="font-barlow text-[11px] tracking-[0.2em] uppercase text-brand-offwhite/65 hover:text-brand-offwhite bg-transparent border-none cursor-pointer transition-colors duration-200"
+              >
+                LOGIN
+              </button>
+              <button
+                onClick={() => navigate("/signup")}
+                className="btn-ghost btn-ghost-sm"
+              >
+                SIGN UP
+              </button>
+            </>
+          )}
         </div>
-
-        {/* Note: StaggeredMenu is used for the mobile menu / global sidebar menu. Its toggle button is placed via fixed positioning. */}
       </nav>
     </>
   );

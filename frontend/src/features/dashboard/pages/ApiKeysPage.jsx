@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Copy, Eye, EyeOff, Trash2, Plus } from 'lucide-react'
-import { addApiKey, revokeApiKey, toggleKeyVisibility } from '../../dashboard/dashboard.slice'
+import { addApiKey, revokeApiKey, toggleKeyVisibility } from '../dashboard/dashboard.slice'
 import apikeyService from '../../../services/apikey.service.js'
 import { CardSkeleton } from '../../../components/LoadingSkeleton'
 

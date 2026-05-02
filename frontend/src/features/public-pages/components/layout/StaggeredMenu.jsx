@@ -6,16 +6,17 @@ import gsap from 'gsap';
 const menuItems = [
   { label: 'Home',             href: '#hero', isNav: false },
   { label: 'Features',         href: '#monitoring', isNav: false },
-  { label: 'Incidents',        href: '#alerts', isNav: false },
+  { label: 'Alerts',           href: '#alerts', isNav: false },
   { label: 'Status',           href: '#response', isNav: false },
   { label: 'Login',            href: '/login', isNav: true },
+  { label: 'Sign Up',          href: '/signup', isNav: true },
 ];
 
-// ── Edit your social links here ───────────────────────────────────────────────
+// ── System links in the footer of the menu ────────────────────────────────────
 const socialItems = [
-  { label: 'Twitter',   href: '#' },
-  { label: 'LinkedIn',  href: '#' },
-  { label: 'Status',    href: '#' },
+  { label: 'Dashboard',  href: '/dashboard' },
+  { label: 'Incidents',  href: '/incidents' },
+  { label: 'Analytics',  href: '#analytics' },
 ];
 
 export default function StaggeredMenu() {

@@ -1,11 +1,12 @@
 /**
  * Incident Service
- * Handles all incident-related API calls:
- * - List incidents
- * - Get incident details
- * - Create incident
- * - Update incident
- * - Delete incident
+ * Handles all incident-related API calls matching backend routes:
+ * - POST   /api/incidents           → Create incident
+ * - GET    /api/incidents           → List incidents (with filters)
+ * - GET    /api/incidents/:id       → Get incident detail
+ * - PUT    /api/incidents/:id/status → Update incident status
+ * - POST   /api/incidents/:id/assign → Assign incident
+ * - GET    /api/incidents/dashboard/stats → Dashboard stats
  */
 
 import apiClient from './apiClient.js'
@@ -14,8 +15,9 @@ import { API_ENDPOINTS } from '../config/api.js'
 export const incidentService = {
   /**
    * Fetch all incidents with optional filters
-   * @param {Object} filters - Filter parameters (status, severity, page, limit)
-   * @returns {Promise} - List of incidents
+   * Backend supports: limit, skip, status, severity, service, tags
+   * @param {Object} filters - Filter parameters
+   * @returns {Promise} - { success, data: { incidents, total, ... } }
    */
   getIncidents: async (filters = {}) => {
     try {
@@ -30,8 +32,8 @@ export const incidentService = {
 
   /**
    * Get single incident by ID
-   * @param {string} id - Incident ID
-   * @returns {Promise} - Incident details
+   * @param {string} id - MongoDB ObjectId
+   * @returns {Promise} - { success, data: incident }
    */
   getIncidentById: async (id) => {
     try {
@@ -43,9 +45,11 @@ export const incidentService = {
   },
 
   /**
-   * Create new incident
-   * @param {Object} data - Incident data
-   * @returns {Promise} - Created incident
+   * Create new incident (manual)
+   * Backend requires: title, service, severity
+   * Backend optional: description, tags
+   * @param {Object} data - { title, description, service, severity, tags }
+   * @returns {Promise} - { success, data: incident }
    */
   createIncident: async (data) => {
     try {
@@ -57,31 +61,53 @@ export const incidentService = {
   },
 
   /**
-   * Update incident
+   * Update incident status
+   * Backend expects: { status } in body where status is one of:
+   * 'open' | 'investigating' | 'identified' | 'resolved'
    * @param {string} id - Incident ID
-   * @param {Object} data - Update data
-   * @returns {Promise} - Updated incident
+   * @param {string} status - New status value
+   * @returns {Promise} - { success, data: updatedIncident }
    */
-  updateIncident: async (id, data) => {
+  updateIncidentStatus: async (id, status) => {
     try {
-      const response = await apiClient.put(API_ENDPOINTS.INCIDENTS_UPDATE(id), data)
+      const response = await apiClient.put(
+        API_ENDPOINTS.INCIDENTS_UPDATE_STATUS(id),
+        { status }
+      )
       return response.data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update incident')
+      throw new Error(error.response?.data?.message || 'Failed to update incident status')
     }
   },
 
   /**
-   * Delete incident
+   * Assign incident to responders
    * @param {string} id - Incident ID
-   * @returns {Promise} - Delete response
+   * @param {Object} data - { autoAssign: true } or { userIds: [...] }
+   * @returns {Promise} - { success, data }
    */
-  deleteIncident: async (id) => {
+  assignIncident: async (id, data) => {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.INCIDENTS_DELETE(id))
+      const response = await apiClient.post(
+        API_ENDPOINTS.INCIDENTS_ASSIGN(id),
+        data
+      )
       return response.data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete incident')
+      throw new Error(error.response?.data?.message || 'Failed to assign incident')
+    }
+  },
+
+  /**
+   * Get incident dashboard stats
+   * @returns {Promise} - { success, data: stats }
+   */
+  getDashboardStats: async () => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.INCIDENTS_DASHBOARD_STATS)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch dashboard stats')
     }
   },
 }
