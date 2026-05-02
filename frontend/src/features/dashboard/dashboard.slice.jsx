@@ -3,15 +3,13 @@
  * Manages dashboard state:
  * - Active view (sidebar navigation)
  * - Dashboard stats from backend
- * - API keys (local state for UI)
+ * - All data is fetched from APIs — no mock data
  */
 
 import { createSlice } from "@reduxjs/toolkit";
-import { INITIAL_KEYS } from "./dashboard.constants";
 
 const initialState = {
   activeView: "dashboard",
-  apiKeys: INITIAL_KEYS,
   stats: null,        // Dashboard stats from backend
   trends: null,       // Trend data from backend
   health: [],         // Service health data
@@ -50,24 +48,6 @@ const dashboardSlice = createSlice({
     setHealth: (state, action) => {
       state.health = action.payload;
     },
-
-    // API Keys (local state)
-    addApiKey: (state, action) => {
-      state.apiKeys.unshift(action.payload);
-    },
-    revokeApiKey: (state, action) => {
-      const key = state.apiKeys.find((k) => k.id === action.payload);
-      if (key) {
-        key.active = false;
-        key.visible = false;
-      }
-    },
-    toggleKeyVisibility: (state, action) => {
-      const key = state.apiKeys.find((k) => k.id === action.payload);
-      if (key && key.active) {
-        key.visible = !key.visible;
-      }
-    },
   },
 });
 
@@ -78,9 +58,6 @@ export const {
   setStatsError,
   setTrends,
   setHealth,
-  addApiKey,
-  revokeApiKey,
-  toggleKeyVisibility,
 } = dashboardSlice.actions;
 
 export default dashboardSlice.reducer;

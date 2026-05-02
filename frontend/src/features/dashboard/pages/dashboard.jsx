@@ -5,7 +5,6 @@ import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
 import DashboardView from '../components/DashboardView';
 import ApiKeysView from '../components/ApiKeysView';
-import EmptyView from '../components/EmptyView';
 import { NAV_ITEMS } from '../dashboard.constants';
 import useIncidents from '../../../hooks/useIncidents.js';
 import useToast from '../../../hooks/useToast.jsx';
@@ -41,8 +40,8 @@ export default function OpsPulseDashboard() {
   const renderView = () => {
     if (active === "dashboard") return <DashboardView />;
     if (active === "apikeys")   return <ApiKeysView />;
-    const label = NAV_ITEMS.find(n => n.id === active)?.label || active;
-    return <EmptyView title={label} />;
+    // All other nav items navigate away via Sidebar — this is a fallback
+    return <DashboardView />;
   };
 
   return (

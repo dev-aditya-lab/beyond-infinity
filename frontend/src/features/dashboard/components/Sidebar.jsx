@@ -30,13 +30,23 @@ const Sidebar = ({ active, setActive, open, onClose }) => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { logout } = useAuth();
-  const groups = ["MAIN","ANALYTICS","SYSTEM"];
+  const groups = ["MAIN","SYSTEM"];
 
   /** Handle nav item click — some items navigate to actual routes */
   const handleNavClick = (navId) => {
     // Items with dedicated routes
     if (navId === "incidents") {
       navigate("/incidents");
+      onClose();
+      return;
+    }
+    if (navId === "users") {
+      navigate("/employees");
+      onClose();
+      return;
+    }
+    if (navId === "settings") {
+      navigate("/profile");
       onClose();
       return;
     }

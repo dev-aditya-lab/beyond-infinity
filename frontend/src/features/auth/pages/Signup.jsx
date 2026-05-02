@@ -100,7 +100,7 @@ const Signup = () => {
     try {
       await verifyOTP(email, otp)
       success('Account created successfully!', 1500)
-      setTimeout(() => navigate('/dashboard'), 1000)
+      setTimeout(() => navigate('/onboarding'), 1000)
     } catch (err) {
       toastError(err.message || 'OTP verification failed', 5000)
     }

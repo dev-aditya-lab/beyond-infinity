@@ -1,12 +1,11 @@
 import { Router } from "express";
 import { createApiKey, getAllApiKeys, revokeApiKey } from "../controllers/apiKey.controller.js";
-
-// import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWTMiddleware } from "../middleware/auth.middleware.js";
 
 const apiRouter = Router();
 
 // 🔐 All routes protected
-// apiRouter.use(verifyJWT);
+apiRouter.use(verifyJWTMiddleware);
 
 /**
  * @route   POST /api/keys

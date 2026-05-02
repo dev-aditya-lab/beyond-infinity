@@ -11,6 +11,7 @@ import incidentRouter from "./routes/incident.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import dashboardRouter from "./routes/dashboard.routes.js";
 import organizationRouter from "./routes/organization.routes.js";
+import profileRouter from "./routes/profile.routes.js";
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/incidents", incidentRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/organizations", organizationRouter);
+app.use("/api/profile", profileRouter);
 
 /**
  * ---------------- Health Check ----------------

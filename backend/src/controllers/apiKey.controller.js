@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import ApiKey from "../models/apiKey.model.js";
+import OrganizationModel from "../models/organization.model.js";
 import { generateApiKey } from "../utils/apiKeyGenerater/apiGenerater.js";
 
 /**
@@ -32,7 +33,20 @@ export const createApiKey = async (req, res) => {
       prefix,
       keyId,
       user: req.user._id,
+      organizationId: req.user.organizationId || null,
     });
+
+    // If user belongs to an organization, add the key reference
+    if (req.user.organizationId) {
+      try {
+        await OrganizationModel.findByIdAndUpdate(req.user.organizationId, {
+          $push: { apiKeys: apiKey._id },
+        });
+      } catch (e) {
+        // non-fatal: log and continue
+        console.warn("Failed to push apiKey to organization", e.message);
+      }
+    }
 
     return res.status(201).json({
       message: "API key created successfully",
@@ -44,7 +58,7 @@ export const createApiKey = async (req, res) => {
         createdAt: apiKey.createdAt,
       },
       APIkey: rawKey, // ⚠️ show only once
-      message: "⚠️ Please copy the API key now. It won't be shown again for security reasons.",
+      warning: "⚠️ Please copy the API key now. It won't be shown again for security reasons.",
     });
   } catch (error) {
     return res.status(500).json({

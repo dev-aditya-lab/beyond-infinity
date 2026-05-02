@@ -185,7 +185,8 @@ export const verifyOTPController = async (req, res) => {
     // ✅ OTP verification successful
     user.isVerified = true;
     user.lastLogin = new Date();
-    await ensureUserOrganization(user);
+    // Organization is NOT auto-created here.
+    // Users go through the onboarding page to create or join an org.
     await user.save();
 
     // ✅ Delete all OTP data from Redis
@@ -219,6 +220,10 @@ export const verifyOTPController = async (req, res) => {
       role: user.role,
       organizationId: user.organizationId,
       avatar: user.avatar,
+      phone: user.phone,
+      bio: user.bio,
+      skills: user.skills,
+      available: user.available,
       isVerified: user.isVerified,
     };
 
@@ -263,6 +268,10 @@ export const getMeController = async (req, res) => {
       role: user.role,
       organizationId: user.organizationId,
       avatar: user.avatar,
+      phone: user.phone,
+      bio: user.bio,
+      skills: user.skills,
+      available: user.available,
       isVerified: user.isVerified,
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,

@@ -42,6 +42,15 @@ export const API_ENDPOINTS = {
   // Organization endpoints
   ORG_DETAIL: (id) => `/organizations/${id}`,
   ORG_UPDATE: (id) => `/organizations/${id}`,
+
+  // Profile endpoints
+  PROFILE: '/profile',
+  PROFILE_UPDATE: '/profile',
+  PROFILE_CREATE_ORG: '/profile/organization',
+  MEMBERS_LIST: '/profile/members',
+  MEMBERS_ADD: '/profile/members',
+  MEMBERS_REMOVE: (id) => `/profile/members/${id}`,
+  MEMBERS_UPDATE_ROLE: (id) => `/profile/members/${id}/role`,
 }
 
 export default API_BASE_URL

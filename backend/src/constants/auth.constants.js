@@ -30,7 +30,7 @@ export const AUTH_MESSAGES = {
   OTP_REQUIRED: "OTP is required",
   OTP_LENGTH_ERROR: "OTP must be exactly 6 digits",
   NAME_REQUIRED: "Name is required",
-  ROLE_INVALID: "Role must be either 'admin' or 'employee'",
+  ROLE_INVALID: "Role must be 'admin', 'responder', or 'employee'",
   AVATAR_INVALID: "Avatar must be a valid URL",
 
   // Business Logic Errors
@@ -52,5 +52,6 @@ export const AUTH_MESSAGES = {
 
 export const ROLES = {
   ADMIN: "admin",
+  RESPONDER: "responder",
   EMPLOYEE: "employee",
 };

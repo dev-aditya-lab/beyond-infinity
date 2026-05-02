@@ -34,6 +34,7 @@ export const SOURCE = {
 // User roles (match backend user.model.js)
 export const ROLES = {
   ADMIN: 'admin',
+  RESPONDER: 'responder',
   EMPLOYEE: 'employee',
 }
 

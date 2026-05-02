@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["admin", "employee"],
+      enum: ["admin", "responder", "employee"],
       default: "employee",
     },
     organizationId: {
@@ -28,15 +28,52 @@ const userSchema = new mongoose.Schema(
       ref: "Organization",
       index: true,
     },
-    skills: {
-      type: String,
-      trim: true,
-      maxlength: 30,
-    },
+
+    // Skills as array of tags for AI assignment matching
+    // e.g. ["payment", "database", "api", "frontend"]
+    skills: [
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+      },
+    ],
+
     avatar: {
       type: String,
       default:
         "https://res.cloudinary.com/di77yygcs/image/upload/v1777048491/blog/csyh9zademalguzxpr9a.jpg",
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+    },
+
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+    },
+
+    // Assignment engine fields
+    available: {
+      type: Boolean,
+      default: true,
+    },
+
+    activeIncidents: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    performanceScore: {
+      type: Number,
+      default: 0.5,
+      min: 0,
+      max: 1,
     },
 
     isActive: {

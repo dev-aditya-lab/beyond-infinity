@@ -3,6 +3,7 @@ import publicPagesReducer from "../features/public-pages/public-pages.slice";
 import dashboardReducer from "../features/dashboard/dashboard.slice";
 import authReducer from "../features/auth/auth.slice";
 import incidentsReducer from "../features/incidents/incidents.slice";
+import profileReducer from "../features/profile/profile.slice";
 
 export const appStore = configureStore({
     reducer: {
@@ -10,5 +11,7 @@ export const appStore = configureStore({
         dashboard: dashboardReducer,
         auth: authReducer,
         incidents: incidentsReducer,
+        profile: profileReducer,
     },
 })
+

@@ -20,7 +20,16 @@ export const verifyApiMiddleware = async (req, res, next) => {
         k.lastUsedAt = new Date();
         await k.save();
 
-        req.apiUser = k.user;
+        // Attach structured api key data for downstream handlers
+        const organizationId = k.organizationId || (k.user && k.user.organizationId) || null;
+
+        req.apiKeyData = {
+          organizationId,
+          keyId: k.keyId,
+          apiKeyId: k._id,
+          user: k.user,
+        };
+
         return next();
       }
     }
