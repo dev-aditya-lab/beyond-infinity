@@ -113,17 +113,27 @@ const DashboardView = () => {
                 API NOT INTEGRATED YET
               </div>
               <p className="font-barlow text-[11px] tracking-[0.06em] text-white/50 leading-relaxed mb-3">
-                No active API keys found. Generate an API key and integrate the OpsPulse SDK into your backend to start monitoring errors and incidents automatically.
+                No active API keys found. Generate an API key and send errors from your backend to start monitoring incidents automatically.
               </p>
               <div className="font-barlow text-[9px] tracking-[0.14em] uppercase text-white/25 mb-3">
-                QUICK START
+                INTEGRATION GUIDE
               </div>
               <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-3 mb-3 font-mono text-[10px] text-amber-300/80 leading-relaxed overflow-x-auto">
-                <div className="text-white/25 mb-1">// Install the SDK</div>
-                <div>npm install @opspulse/sdk</div>
-                <div className="text-white/25 mt-2 mb-1">// Initialize in your app</div>
-                <div>{`const ops = require('@opspulse/sdk');`}</div>
-                <div>{`ops.init({ apiKey: 'YOUR_API_KEY' });`}</div>
+                <div className="text-white/25 mb-1">{"// Send errors to OpsPulse from your backend"}</div>
+                <div>{`fetch("https://your-opspulse-url/api/errors/intake", {`}</div>
+                <div>{`  method: "POST",`}</div>
+                <div>{`  headers: {`}</div>
+                <div>{`    "Content-Type": "application/json",`}</div>
+                <div className="text-green-400">{`    "x-api-key": "YOUR_API_KEY"  // from API Keys tab`}</div>
+                <div>{`  },`}</div>
+                <div>{`  body: JSON.stringify({`}</div>
+                <div>{`    service: "payment-service",`}</div>
+                <div>{`    error: "Payment gateway timeout",`}</div>
+                <div>{`    statusCode: 504,`}</div>
+                <div>{`    stackTrace: err.stack,`}</div>
+                <div>{`    metadata: { userId: "123" }`}</div>
+                <div>{`  })`}</div>
+                <div>{`});`}</div>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <GhostBtn onClick={() => navigate('/dashboard')}>
