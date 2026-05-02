@@ -3,9 +3,12 @@ import userModel from "../models/user.model.js";
 import { ENV } from "../config/env.config.js";
 import redisClient from "../config/redis/redis.config.js";
 
-export const authMiddleware = async (req, res, next) => {
+export const verifyJWTMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const authHeader = req.headers.authorization || "";
+    const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    const cookieToken = req.cookies?.token;
+    const token = cookieToken || bearerToken;
 
     if (!token) {
       return res.status(401).json({

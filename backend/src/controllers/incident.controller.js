@@ -12,17 +12,17 @@ import {
   updateIncidentStatus,
   assignIncidentToUsers,
   getIncidentStats,
-} from "../../services/incident/incident.service.js";
+} from "../services/incident/incident.service.js";
 import {
   scoreAndAssignResponder,
   getAvailableResponders,
-} from "../../services/assignment/assignment.service.js";
+} from "../services/assignment/assignment.service.js";
 import {
   socketEmitIncidentCreated,
   socketEmitStatusChanged,
   socketEmitAssigned,
-} from "../../services/socket/socket.integration.js";
-import UserModel from "../../models/user.model.js";
+} from "../services/socket/socket.integration.js";
+import UserModel from "../models/user.model.js";
 
 /**
  * POST /api/incidents

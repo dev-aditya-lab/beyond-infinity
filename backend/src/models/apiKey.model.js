@@ -40,4 +40,4 @@ const apiKeySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("ApiKey", apiKeySchema);
+export default mongoose.models.ApiKey || mongoose.model("ApiKey", apiKeySchema);

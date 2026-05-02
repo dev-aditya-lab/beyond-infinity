@@ -1,4 +1,4 @@
-import redisClient from "../config/redis/redis.config.js";
+import redisClient from "../../config/redis/redis.config.js";
 import { AUTH_CONSTANTS } from "../../constants/auth.constants.js";
 
 /**

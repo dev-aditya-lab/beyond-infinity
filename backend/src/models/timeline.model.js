@@ -4,7 +4,7 @@
  */
 
 import mongoose from "mongoose";
-import { TIMELINE_EVENT_TYPES } from "../../constants/incident.constants.js";
+import { TIMELINE_EVENT_TYPES } from "../constants/incident.constants.js";
 
 const timelineSchema = new mongoose.Schema(
   {
@@ -64,4 +64,4 @@ const timelineSchema = new mongoose.Schema(
 timelineSchema.index({ incidentId: 1, createdAt: -1 });
 timelineSchema.index({ organizationId: 1, createdAt: -1 });
 
-export default mongoose.model("Timeline", timelineSchema);
+export default mongoose.models.Timeline || mongoose.model("Timeline", timelineSchema);

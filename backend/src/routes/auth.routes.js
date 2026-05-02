@@ -5,7 +5,7 @@ import {
   getMeController,
   logoutController,
 } from "../controllers/auth.controller.js";
-import { authMiddleware } from "../middleware/auth.middleware.js";
+import { verifyJWTMiddleware } from "../middleware/auth.middleware.js";
 import { validateSendOTP, validateVerifyOTP } from "../validators/auth.validator.js";
 
 const authRouter = express.Router();
@@ -31,13 +31,13 @@ authRouter.post("/verify-otp", validateVerifyOTP, verifyOTPController);
  * @desc Get current authenticated user
  * @access Private
  */
-authRouter.get("/me", authMiddleware, getMeController);
+authRouter.get("/me", verifyJWTMiddleware, getMeController);
 
 /**
  * @route POST /auth/logout
  * @desc Logout user
  * @access Private
  */
-authRouter.post("/logout", authMiddleware, logoutController);
+authRouter.post("/logout", verifyJWTMiddleware, logoutController);
 
 export default authRouter;

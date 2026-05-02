@@ -6,7 +6,7 @@
 
 import IncidentModel from "../../models/incident.model.js";
 import { analyzeIncidentOnce } from "../AI/analysis/ai.analysis.service.js";
-import { markErrorsProcessed } from "../../services/aggregation/aggregation.service.js";
+import { markErrorsProcessed } from "../aggregation/aggregation.service.js";
 
 /**
  * Create incident from aggregated errors
