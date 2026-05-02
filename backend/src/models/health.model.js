@@ -4,7 +4,7 @@
  */
 
 import mongoose from "mongoose";
-import { SERVICE_HEALTH_STATUS } from "../../constants/incident.constants.js";
+import { SERVICE_HEALTH_STATUS } from "../constants/incident.constants.js";
 
 const healthSchema = new mongoose.Schema(
   {
@@ -56,4 +56,4 @@ const healthSchema = new mongoose.Schema(
 
 healthSchema.index({ organizationId: 1, service: 1 });
 
-export default mongoose.model("Health", healthSchema);
+export default mongoose.models.Health || mongoose.model("Health", healthSchema);

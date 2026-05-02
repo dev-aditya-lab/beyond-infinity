@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router';
 import { HeroBg } from './Backgrounds';
 import { FullSection, Overlay, Content } from '../common/LayoutElements';
 import { Divider, Heading, SubText, StatRow } from '../common/Typography';
 
-const HeroSection = () => (
+const HeroSection = () => {
+  const navigate = useNavigate();
+  return (
   <FullSection id="hero">
     <HeroBg />
     <div className="scanlines" />
@@ -22,7 +25,7 @@ const HeroSection = () => (
         REAL-TIME<br />INCIDENT<br />RESPONSE<br />PLATFORM
       </Heading>
       <SubText>MONITOR, DETECT, AND RESOLVE<br />SYSTEM FAILURES INSTANTLY</SubText>
-      <button className="btn-ghost">VIEW INCIDENTS</button>
+      <button onClick={() => navigate("/login")} className="btn-ghost">VIEW INCIDENTS</button>
       <StatRow stats={[
         { num: "99.98", label: "UPTIME %" },
         { num: "0.4s",  label: "MEAN DETECTION" },
@@ -31,5 +34,6 @@ const HeroSection = () => (
     </Content>
   </FullSection>
 );
+};
 
 export default HeroSection;

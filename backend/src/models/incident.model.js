@@ -132,5 +132,5 @@ incidentSchema.index({ organizationId: 1, service: 1, startedAt: -1 });
 // Fingerprint + organization for linking errors
 incidentSchema.index({ organizationId: 1, fingerprint: 1 });
 
-const incident = mongoose.model("incident", incidentSchema);
+const incident = mongoose.models.incident || mongoose.model("incident", incidentSchema);
 export default incident;

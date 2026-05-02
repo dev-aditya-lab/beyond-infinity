@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ERROR_SOURCES, ERROR_RETENTION_DAYS } from "../../constants/incident.constants.js";
+import { ERROR_SOURCES, ERROR_RETENTION_DAYS } from "../constants/incident.constants.js";
 
 /**
  * Error Schema - Stores raw errors from client systems
@@ -108,4 +108,4 @@ errorSchema.index({ organizationId: 1, service: 1, errorTimestamp: -1 }); // Ser
 errorSchema.index({ incidentId: 1 }); // Find errors by incident
 errorSchema.index({ createdAt: 1 }, { expireAfterSeconds: ERROR_RETENTION_DAYS * 86400 }); // Auto-delete after retention period
 
-export default mongoose.model("Error", errorSchema);
+export default mongoose.models.Error || mongoose.model("Error", errorSchema);

@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import apiKeyModel from "../models/apiKey.model";
-import { ENV } from "../config/env.config";
+import apiKeyModel from "../models/apiKey.model.js";
+import { ENV } from "../config/env.config.js";
 
-export const verifyApiKey = async (req, res, next) => {
+export const verifyApiMiddleware = async (req, res, next) => {
   try {
     const key = req.headers["x-api-key"];
 

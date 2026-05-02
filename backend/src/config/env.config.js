@@ -47,11 +47,11 @@ export const ENV = Object.freeze({
   JWT_SECRET: requireEnv("JWT_SECRET"),
 
   // ===== CORS =====
-  CORS_ORIGIN: optionalEnv("CORS_ORIGIN", "http://localhost:3000"),
+  CORS_ORIGIN: optionalEnv("CORS_ORIGIN", optionalEnv("CORSE_ORIGIN", "http://localhost:5173")),
 
   // ===== Redis =====
   REDIS: {
-    // USERNAME: optionalEnv("REDIS_USERNAME", "default"),
+    USERNAME: optionalEnv("REDIS_USERNAME", "default"),
     HOST: requireEnv("REDIS_HOST"),
     PORT: toNumber(requireEnv("REDIS_PORT"), "REDIS_PORT"),
     PASSWORD: requireEnv("REDIS_PASSWORD"),

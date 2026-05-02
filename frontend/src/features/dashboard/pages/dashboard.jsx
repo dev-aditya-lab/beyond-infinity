@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import GoogleFonts from '../components/GoogleFonts';
 import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
@@ -6,12 +7,19 @@ import DashboardView from '../components/DashboardView';
 import ApiKeysView from '../components/ApiKeysView';
 import EmptyView from '../components/EmptyView';
 import { NAV_ITEMS } from '../dashboard.constants';
+import useIncidents from '../../../hooks/useIncidents.js';
+import useToast from '../../../hooks/useToast.jsx';
+import { ToastContainer } from '../../../hooks/useToast.jsx';
+import authService from '../../../services/auth.service.js';
 
 
 /* ─── ROOT ─── */
 export default function OpsPulseDashboard() {
   const [active, setActive] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dispatch = useDispatch();
+  const { getIncidents } = useIncidents();
+  const { toasts, removeToast } = useToast();
 
   // Close sidebar on large screens
   useEffect(() => {
@@ -20,6 +28,14 @@ export default function OpsPulseDashboard() {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!authService.getToken()) return;
+
+    getIncidents().catch((err) => {
+      console.error('Failed to fetch dashboard data:', err);
+    });
   }, []);
 
   const renderView = () => {
@@ -46,6 +62,7 @@ export default function OpsPulseDashboard() {
           </div>
         </div>
       </div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );
 }

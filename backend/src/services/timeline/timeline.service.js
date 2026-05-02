@@ -3,7 +3,7 @@
  * Records all incident changes for audit trail
  */
 
-import TimelineModel from "../../models/timeline.model.js";
+import TimelineModel from "../models/timeline.model.js";
 
 /**
  * Log an event to timeline

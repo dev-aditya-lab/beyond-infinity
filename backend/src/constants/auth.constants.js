@@ -40,6 +40,7 @@ export const AUTH_MESSAGES = {
   INVALID_OTP: "Invalid OTP. Please try again",
   OTP_ATTEMPTS_EXCEEDED: "Maximum OTP attempts exceeded. Please request a new OTP",
   USER_NOT_FOUND: "User not found",
+  LOGIN_USER_NOT_FOUND: "No account found for this email. Please sign up first",
   OTP_NOT_SENT: "OTP not found. Please send OTP first",
   TOKEN_MISSING: "Not authorized, token missing",
 

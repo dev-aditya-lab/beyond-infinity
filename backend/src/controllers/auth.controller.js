@@ -5,6 +5,29 @@ import redisOTPService from "../services/redis/redis.otp.service.js";
 import jwt from "jsonwebtoken";
 import redisClient from "../config/redis/redis.config.js";
 import { AUTH_CONSTANTS, AUTH_MESSAGES, ROLES } from "../constants/auth.constants.js";
+import { ENV } from "../config/env.config.js";
+import OrganizationModel from "../models/organization.model.js";
+
+const buildOrganizationName = (user) => {
+  const baseName = user?.name?.trim() || user?.email?.split("@")[0] || "OpsPulse";
+  return `${baseName}'s Organization`;
+};
+
+const ensureUserOrganization = async (user) => {
+  if (user.organizationId) {
+    return user.organizationId;
+  }
+
+  const organization = await OrganizationModel.create({
+    name: buildOrganizationName(user),
+    owner: user._id,
+  });
+
+  user.organizationId = organization._id;
+  await user.save();
+
+  return organization._id;
+};
 
 /**
  * Send OTP to email
@@ -14,22 +37,37 @@ import { AUTH_CONSTANTS, AUTH_MESSAGES, ROLES } from "../constants/auth.constant
 export const sendOTPController = async (req, res) => {
   try {
     const { email, name, role, avatar } = req.body;
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    const normalizedAvatar = typeof avatar === "string" ? avatar.trim() : "";
 
     // Find or create user
     let user = await userModel.findOne({ email });
 
     if (!user) {
-      user = await userModel.create({
+      // Treat requests without a name as login attempts.
+      // Login should not silently create new accounts.
+      if (!normalizedName) {
+        return res.status(404).json({
+          success: false,
+          message: AUTH_MESSAGES.LOGIN_USER_NOT_FOUND,
+        });
+      }
+
+      const userPayload = {
         email,
-        name: name || "",
-        avatar: avatar || "",
         role: role || ROLES.EMPLOYEE,
         isVerified: false,
-      });
+      };
+
+      // Only persist optional fields when they contain meaningful values.
+      if (normalizedName) userPayload.name = normalizedName;
+      if (normalizedAvatar) userPayload.avatar = normalizedAvatar;
+
+      user = await userModel.create(userPayload);
     } else {
       // Update user info if provided
-      if (name) user.name = name;
-      if (avatar) user.avatar = avatar;
+      if (normalizedName) user.name = normalizedName;
+      if (normalizedAvatar) user.avatar = normalizedAvatar;
       if (role) user.role = role;
       await user.save();
     }
@@ -147,6 +185,7 @@ export const verifyOTPController = async (req, res) => {
     // ✅ OTP verification successful
     user.isVerified = true;
     user.lastLogin = new Date();
+    await ensureUserOrganization(user);
     await user.save();
 
     // ✅ Delete all OTP data from Redis
@@ -159,12 +198,18 @@ export const verifyOTPController = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      process.env.JWT_SECRET,
+      ENV.JWT_SECRET,
       { expiresIn: AUTH_CONSTANTS.JWT_EXPIRY }
     );
 
-    // Set secure cookie
-    res.cookie("token", token, AUTH_CONSTANTS.COOKIE_OPTIONS);
+    // Use secure cookies only in production HTTPS environments.
+    const cookieOptions = {
+      ...AUTH_CONSTANTS.COOKIE_OPTIONS,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: ENV.NODE_ENV === "production" ? "Strict" : "Lax",
+    };
+
+    res.cookie("token", token, cookieOptions);
 
     // Prepare user response (exclude sensitive fields)
     const userResponse = {
@@ -172,6 +217,7 @@ export const verifyOTPController = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      organizationId: user.organizationId,
       avatar: user.avatar,
       isVerified: user.isVerified,
     };
@@ -208,11 +254,14 @@ export const getMeController = async (req, res) => {
       });
     }
 
+    await ensureUserOrganization(user);
+
     const userResponse = {
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      organizationId: user.organizationId,
       avatar: user.avatar,
       isVerified: user.isVerified,
       lastLogin: user.lastLogin,

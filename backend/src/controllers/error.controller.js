@@ -1,7 +1,7 @@
 import { validationResult } from "express-validator";
-import ErrorModel from "../../models/error.model.js";
-import { generateErrorFingerprint } from "../../utils/aggregation/errorFingerprint.js";
-import { aggregateError } from "../../services/aggregation/aggregation.service.js";
+import ErrorModel from "../models/Error.model.js";
+import { generateErrorFingerprint } from "../utils/aggregation/errorFingerprint.js";
+import { aggregateError } from "../services/aggregation/aggregation.service.js";
 
 /**
  * Error Intake Controller
